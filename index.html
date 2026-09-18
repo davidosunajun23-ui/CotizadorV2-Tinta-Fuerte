@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Catálogo y Cotizador</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 90px; }
+    .container { max-width: 820px; margin: 0 auto; }
+    
+    /* Navegación */
+    .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 50; background: var(--bg); padding: 6px 0; }
+    .nav-btn { padding: 12px 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); font-weight: 600; font-size: 0.95rem; cursor: pointer; color: var(--muted); transition: all 0.2s; text-align: center; }
+    .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
+    
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+    
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
+    
+    /* Formularios y Pasos */
+    .step-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+    .step-header { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--primary); letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+    input, select, button { font-size: 1rem; border-radius: 8px; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; background: #fff; outline: none; margin-bottom: 8px; }
+    .form-control:focus { border-color: var(--primary); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    
+    /* Rangos */
+    .tier-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr auto; gap: 8px; align-items: center; margin-bottom: 8px; background: #fff; padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
+    .btn-action { padding: 8px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-primary { background: var(--primary); color: #fff; width: 100%; padding: 14px; font-size: 1.05rem; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
+    .btn-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
+
+    /* Catálogo */
+    .cat-group { margin-bottom: 24px; }
+    .cat-header { font-size: 1.1rem; font-weight: 800; color: #1e293b; padding-bottom: 6px; border-bottom: 2px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; }
+    .prod-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .prod-head { display: flex; justify-content: space-between; align-items: flex-start; }
+    .prod-name { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+    .prod-price { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+    .tier-badge-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .tier-pill { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+
+    /* Cotizador */
+    .cart-float { background: #0f172a; color: white; border-radius: 14px; padding: 16px; margin-top: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 0.95rem; }
+    .cart-total { font-size: 1.4rem; font-weight: 800; display: flex; justify-content: space-between; padding-top: 12px; margin-top: 8px; border-top: 2px solid #334155; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Navegación -->
+  <div class="nav-tabs">
+    <button class="nav-btn active" onclick="verTab('agregar')">➕ Nuevo Producto</button>
+    <button class="nav-btn" onclick="verTab('catalogo')">📋 Catálogo General</button>
+    <button class="nav-btn" onclick="verTab('cotizador')">🧮 Cotizador</button>
+  </div>
+
+  <!-- ================= VISTA 1: INSERTAR / EDITAR ================= -->
+  <div id="view-agregar" class="view-section active">
+    <div class="card">
+      <div class="card-title">
+        <span id="formTitle">Insertar Nuevo Producto</span>
+        <button id="btnCancelEdit" class="btn-action btn-secondary btn-sm" style="display:none;" onclick="cancelarEdicion()">Cancelar Edición</button>
+      </div>
+      
+      <input type="hidden" id="editId" value="">
+
+      <!-- Paso 1 -->
+      <div class="step-box">
+        <div class="step-header">Paso 1: Categoría</div>
+        <div class="grid-2">
+          <div>
+            <label>Seleccionar Existente</label>
+            <select id="categoriaSelect" class="form-control" onchange="seleccionarCategoriaExistente()">
+              <option value="">-- Elige una existente --</option>
+            </select>
+          </div>
+          <div>
+            <label>O Escribir Nueva</label>
+            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Playeras, Gorras, DTF...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="step-box">
+        <div class="step-header">Paso 2: Nombre del Producto</div>
+        <input type="text" id="nombreInput" class="form-control" placeholder="Ej. Playera Yazbek Blanca S-XL, Yupoong 6606...">
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="step-box">
+        <div class="step-header">Paso 3: Precio Unitario Base</div>
+        <input type="number" id="precioBaseInput" class="form-control" placeholder="0.00" min="0" step="any">
+      </div>
+
+      <!-- Paso 4 -->
+      <div class="step-box">
+        <div class="step-header">
+          <span>Paso 4: Precios de Mayoreo por Rangos</span>
+          <label style="margin:0 0 0 auto; font-weight:normal; font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="tieneMayoreoCheck" onchange="toggleMayoreoSection()"> ¿Tiene precio de mayoreo?
+          </label>
+        </div>
+
+        <div id="mayoreoSection" style="display: none; margin-top: 10px;">
+          <p style="font-size:0.85rem; color:var(--muted); margin-bottom:10px;">
+            Agrega los rangos que necesites. Deja "Hasta" vacío si el precio aplica de esa cantidad en adelante (ej. de 50 a más).
+          </p>
+          <div id="tiersContainer"></div>
+          <button type="button" class="btn-action btn-secondary btn-sm" onclick="agregarFilaRango()">+ Agregar Otro Rango</button>
+        </div>
+      </div>
+
+      <button type="button" id="btnGuardar" class="btn-action btn-primary" onclick="guardarProducto()">Guardar Producto</button>
+    </div>
+
+    <!-- Backup de datos -->
+    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85rem;">
+      <button class="btn-action btn-secondary btn-sm" onclick="exportarDatos()">📥 Respaldar Catálogo (JSON)</button>
+      <button class="btn-action btn-secondary btn-sm" onclick="document.getElementById('importFile').click()">📤 Restaurar Respaldo</button>
+      <input type="file" id="importFile" style="display:none" onchange="importarDatos(event)">
+    </div>
+  </div>
+
+  <!-- ================= VISTA 2: CATÁLOGO GENERAL ================= -->
+  <div id="view-catalogo" class="view-section">
+    <div class="card">
+      <div class="card-title">Catálogo General</div>
+      <input type="text" id="buscarCatalogo" class="form-control" placeholder="🔍 Filtrar por nombre de producto o categoría..." oninput="renderCatalogo()">
+      <div id="listaCatalogoContainer"></div>
+    </div>
+  </div>
+
+  <!-- ================= VISTA 3: COTIZADOR ================= -->
+  <div id="view-cotizador" class="view-section">
+    <div class="card">
+      <div class="card-title">Cotizador Rápido</div>
+      
+      <div class="step-box">
+        <label>1. Buscar y Elegir Producto / Servicio</label>
+        <select id="cotizProductoSelect" class="form-control" onchange="actualizarInfoProductoCotizar()"></select>
+
+        <div class="grid-2" style="margin-top:10px;">
+          <div>
+            <label>2. Cantidad de piezas</label>
+            <input type="number" id="cotizCantidad" class="form-control" value="1" min="1" oninput="calcularPrecioCotizacion()">
+          </div>
+          <div>
+            <label>Precio Unitario Aplicado</label>
+            <div id="cotizPrecioUnitario" style="font-size:1.2rem; font-weight:700; color:var(--primary); padding-top:8px;">$0.00</div>
+          </div>
+        </div>
+
+        <div id="cotizRangoAviso" style="font-size:0.85rem; color:var(--success); font-weight:600; margin-top:4px;"></div>
+      </div>
+
+      <button type="button" class="btn-action btn-primary" onclick="agregarAlTicket()">+ Sumar a la Cotización</button>
+    </div>
+
+    <!-- Ticket Acumulado -->
+    <div class="cart-float" id="ticketBox">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:#94a3b8; font-weight:700;">Ticket Acumulado</span>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-action btn-secondary btn-sm" onclick="copiarTicketWhatsApp()">📋 Copiar Cotización</button>
+          <button class="btn-action btn-danger btn-sm" onclick="vaciarTicket()">Vaciar</button>
+        </div>
+      </div>
+
+      <div id="ticketItemsContainer">
+        <div style="color:#94a3b8; font-size:0.9rem;">No has sumado productos todavía.</div>
+      </div>
+
+      <div class="cart-total">
+        <span>TOTAL:</span>
+        <span id="ticketGranTotal">$0.00 MXN</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Estructura principal en memoria
+  let productos = JSON.parse(localStorage.getItem("catalogo_productos")) || [];
+  let ticket = [];
+
+  // Al cargar
+  window.onload = function() {
+    actualizarSelectCategorias();
+    renderCatalogo();
+    actualizarSelectCotizador();
+  };
+
+  function persistir() {
+    localStorage.setItem("catalogo_productos", JSON.stringify(productos));
+    actualizarSelectCategorias();
+    actualizarSelectCotizador();
+  }
+
+  /* ================= PESTAÑAS ================= */
+  function verTab(tab) {
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
+
+    if (tab === 'agregar') {
+      document.querySelector(".nav-btn:nth-child(1)").classList.add("active");
+      document.getElementById("view-agregar").classList.add("active");
+    } else if (tab === 'catalogo') {
+      document.querySelector(".nav-btn:nth-child(2)").classList.add("active");
+      document.getElementById("view-catalogo").classList.add("active");
+      renderCatalogo();
+    } else if (tab === 'cotizador') {
+      document.querySelector(".nav-btn:nth-child(3)").classList.add("active");
+      document.getElementById("view-cotizador").classList.add("active");
+      actualizarSelectCotizador();
+      calcularPrecioCotizacion();
+    }
+  }
+
+  /* ================= PASO 1 & CATEGORÍAS ================= */
+  function actualizarSelectCategorias() {
+    const sel = document.getElementById("categoriaSelect");
+    const cats = [...new Set(productos.map(p => p.categoria))].filter(Boolean);
+    sel.innerHTML = '<option value="">-- Elige una existente --</option>' + 
+      cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  function seleccionarCategoriaExistente() {
+    const selVal = document.getElementById("categoriaSelect").value;
+    if (selVal) document.getElementById("categoriaInput").value = selVal;
+  }
+
+  /* ================= PASO 4: MAYOREO DINÁMICO ================= */
+  function toggleMayoreoSection() {
+    const check = document.getElementById("tieneMayoreoCheck").checked;
+    document.getElementById("mayoreoSection").style.display = check ? "block" : "none";
+    if (check && document.querySelectorAll(".tier-row").length === 0) {
+      agregarFilaRango();
+    }
+  }
+
+  function agregarFilaRango(desde = '', hasta = '', precio = '') {
+    const container = document.getElementById("tiersContainer");
+    const div = document.createElement("div");
+    div.className = "tier-row";
+    div.innerHTML = `
+      <div>
+        <label style="font-size:0.75rem;">Desde (pz)</label>
+        <input type="number" class="form-control tier-desde" value="${desde}" placeholder="12" min="1">
+      </div>
+      <div>
+        <label style="font-size:0.75rem;">Hasta (pz)</label>
+        <input type="number" class="form-control tier-hasta" value="${hasta}" placeholder="49">
+      </div>
+      <div>
+        <label style="font-size:0.75rem;">Precio unit. ($)</label>
+        <input type="number" class="form-control tier-precio" value="${precio}" placeholder="0.00" min="0" step="any">
+      </div>
+      <div>
+        <label style="font-size:0.75rem;">&nbsp;</label>
+        <button type="button" class="btn-action btn-danger btn-sm" onclick="this.closest('.tier-row').remove()">✕</button>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  /* ================= GUARDAR / EDITAR PRODUCTO ================= */
+  function guardarProducto() {
+    const editId = document.getElementById("editId").value;
+    const categoria = document.getElementById("categoriaInput").value.trim();
+    const nombre = document.getElementById("nombreInput").value.trim();
+    const precioBase = parseFloat(document.getElementById("precioBaseInput").value);
+    const tieneMayoreo = document.getElementById("tieneMayoreoCheck").checked;
+
+    if (!categoria) return alert("Por favor ingresa o selecciona una categoría.");
+    if (!nombre) return alert("Por favor ingresa el nombre del producto.");
+    if (isNaN(precioBase) || precioBase < 0) return alert("Por favor ingresa un precio unitario válido.");
+
+    let rangos = [];
+    if (tieneMayoreo) {
+      const filas = document.querySelectorAll(".tier-row");
+      filas.forEach(f => {
+        const d = parseInt(f.querySelector(".tier-desde").value);
+        const hVal = f.querySelector(".tier-hasta").value;
+        const h = hVal !== "" ? parseInt(hVal) : null;
+        const p = parseFloat(f.querySelector(".tier-precio").value);
+
+        if (!isNaN(d) && !isNaN(p)) {
+          rangos.push({ desde: d, hasta: h, precio: p });
+        }
+      });
+      // Ordenar rangos de menor a mayor
+      rangos.sort((a, b) => a.desde - b.desde);
+    }
+
+    if (editId) {
+      // Editar existente
+      const idx = productos.findIndex(p => p.id === editId);
+      if (idx !== -1) {
+        productos[idx] = { id: editId, categoria, nombre, precioBase, tieneMayoreo: (rangos.length > 0), rangos };
+      }
+      alert("¡Producto actualizado exitosamente!");
+      cancelarEdicion();
+    } else {
+      // Nuevo
+      const nuevo = {
+        id: "prod_" + Date.now(),
+        categoria,
+        nombre,
+        precioBase,
+        tieneMayoreo: (rangos.length > 0),
+        rangos
+      };
+      productos.push(nuevo);
+      alert("¡Producto agregado correctamente!");
+      limpiarFormulario();
+    }
+
+    persistir();
+    verTab('catalogo');
+  }
+
+  function limpiarFormulario() {
+    document.getElementById("editId").value = "";
+    document.getElementById("formTitle").innerText = "Insertar Nuevo Producto";
+    document.getElementById("btnGuardar").innerText = "Guardar Producto";
+    document.getElementById("btnCancelEdit").style.display = "none";
+    document.getElementById("categoriaSelect").value = "";
+    document.getElementById("categoriaInput").value = "";
+    document.getElementById("nombreInput").value = "";
+    document.getElementById("precioBaseInput").value = "";
+    document.getElementById("tieneMayoreoCheck").checked = false;
+    document.getElementById("tiersContainer").innerHTML = "";
+    toggleMayoreoSection();
+  }
+
+  function editarProducto(id) {
+    const prod = productos.find(p => p.id === id);
+    if (!prod) return;
+
+    verTab('agregar');
+    document.getElementById("editId").value = prod.id;
+    document.getElementById("formTitle").innerText = "Editar Producto: " + prod.nombre;
+    document.getElementById("btnGuardar").innerText = "Actualizar Cambios";
+    document.getElementById("btnCancelEdit").style.display = "inline-flex";
+
+    document.getElementById("categoriaInput").value = prod.categoria;
+    document.getElementById("nombreInput").value = prod.nombre;
+    document.getElementById("precioBaseInput").value = prod.precioBase;
+    
+    document.getElementById("tieneMayoreoCheck").checked = prod.tieneMayoreo;
+    toggleMayoreoSection();
+
+    document.getElementById("tiersContainer").innerHTML = "";
+    if (prod.rangos && prod.rangos.length > 0) {
+      prod.rangos.forEach(r => {
+        agregarFilaRango(r.desde, r.hasta !== null ? r.hasta : '', r.precio);
+      });
+    }
+  }
+
+  function cancelarEdicion() {
+    limpiarFormulario();
+    verTab('catalogo');
+  }
+
+  function eliminarProducto(id) {
+    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+      productos = productos.filter(p => p.id !== id);
+      persistir();
+      renderCatalogo();
+    }
+  }
+
+  /* ================= VISTA: CATÁLOGO GENERAL ================= */
+  function renderCatalogo() {
+    const cont = document.getElementById("listaCatalogoContainer");
+    const filtro = document.getElementById("buscarCatalogo") ? document.getElementById("buscarCatalogo").value.toLowerCase() : "";
+
+    if (!productos.length) {
+      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay productos registrados aún. Comienza agregando uno en "Nuevo Producto".</p>`;
+      return;
+    }
+
+    // Agrupar por categoría
+    const grupos = {};
+    productos.forEach(p => {
+      if (p.nombre.toLowerCase().includes(filtro) || p.categoria.toLowerCase().includes(filtro)) {
+        if (!grupos[p.categoria]) grupos[p.categoria] = [];
+        grupos[p.categoria].push(p);
+      }
+    });
+
+    if (Object.keys(grupos).length === 0) {
+      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No se encontraron productos coincidentes.</p>`;
+      return;
+    }
+
+    let html = "";
+    for (const cat in grupos) {
+      html += `<div class="cat-group"><div class="cat-header"><span>📂 ${cat}</span> <span style="font-size:0.85rem; color:var(--muted); font-weight:normal;">${grupos[cat].length} productos</span></div>`;
+      
+      grupos[cat].forEach(p => {
+        html += `
+          <div class="prod-card">
+            <div class="prod-head">
+              <div>
+                <div class="prod-name">${p.nombre}</div>
+                <div style="font-size:0.85rem; color:var(--muted);">Unitario: <b style="color:var(--text); font-size:1rem;">$${p.precioBase.toFixed(2)}</b></div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-action btn-secondary btn-sm" onclick="editarProducto('${p.id}')">✏️ Editar</button>
+                <button class="btn-action btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">🗑️</button>
+              </div>
+            </div>
+        `;
+
+        // Si tiene rangos de mayoreo, mostrarlos todos
+        if (p.tieneMayoreo && p.rangos && p.rangos.length > 0) {
+          html += `<div class="tier-badge-list">`;
+          p.rangos.forEach(r => {
+            const labelRango = r.hasta ? `${r.desde} a ${r.hasta} pz` : `${r.desde}+ pz`;
+            html += `<span class="tier-pill">📦 ${labelRango}: <b>$${r.precio.toFixed(2)}</b> c/u</span>`;
+          });
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+      });
+
+      html += `</div>`;
+    }
+
+    cont.innerHTML = html;
+  }
+
+  /* ================= COTIZADOR ================= */
+  function actualizarSelectCotizador() {
+    const sel = document.getElementById("cotizProductoSelect");
+    if (!productos.length) {
+      sel.innerHTML = '<option value="">(No hay productos en catálogo)</option>';
+      return;
+    }
+    sel.innerHTML = productos.map(p => `<option value="${p.id}">[${p.categoria}] ${p.nombre}</option>`).join('');
+    actualizarInfoProductoCotizar();
+  }
+
+  function actualizarInfoProductoCotizar() {
+    calcularPrecioCotizacion();
+  }
+
+  function obtenerPrecioParaCantidad(prod, qty) {
+    if (!prod.tieneMayoreo || !prod.rangos || !prod.rangos.length) {
+      return { precio: prod.precioBase, rangoDesc: "Precio unitario estándar" };
+    }
+
+    // Buscar si entra en algún rango
+    for (let r of prod.rangos) {
+      if (r.hasta !== null) {
+        if (qty >= r.desde && qty <= r.hasta) {
+          return { precio: r.precio, rangoDesc: `Aplica mayoreo: ${r.desde} a ${r.hasta} piezas` };
+        }
+      } else {
+        if (qty >= r.desde) {
+          return { precio: r.precio, rangoDesc: `Aplica mayoreo: ${r.desde} piezas o más` };
+        }
+      }
+    }
+
+    return { precio: prod.precioBase, rangoDesc: "Precio unitario base (no alcanza rango)" };
+  }
+
+  function calcularPrecioCotizacion() {
+    const id = document.getElementById("cotizProductoSelect").value;
+    const qty = parseInt(document.getElementById("cotizCantidad").value) || 1;
+    const prod = productos.find(p => p.id === id);
+
+    if (!prod) {
+      document.getElementById("cotizPrecioUnitario").innerText = "$0.00";
+      document.getElementById("cotizRangoAviso").innerText = "";
+      return;
+    }
+
+    const calc = obtenerPrecioParaCantidad(prod, qty);
+    document.getElementById("cotizPrecioUnitario").innerText = `$${calc.precio.toFixed(2)} c/u`;
+    document.getElementById("cotizRangoAviso").innerText = calc.rangoDesc;
+  }
+
+  function agregarAlTicket() {
+    const id = document.getElementById("cotizProductoSelect").value;
+    const qty = parseInt(document.getElementById("cotizCantidad").value) || 1;
+    const prod = productos.find(p => p.id === id);
+
+    if (!prod) return alert("Selecciona un producto.");
+
+    const calc = obtenerPrecioParaCantidad(prod, qty);
+    const subtotal = calc.precio * qty;
+
+    ticket.push({
+      id: prod.id,
+      nombre: prod.nombre,
+      categoria: prod.categoria,
+      qty: qty,
+      unitario: calc.precio,
+      subtotal: subtotal
+    });
+
+    renderTicket();
+  }
+
+  function renderTicket() {
+    const cont = document.getElementById("ticketItemsContainer");
+    if (!ticket.length) {
+      cont.innerHTML = `<div style="color:#94a3b8; font-size:0.9rem;">No has sumado productos todavía.</div>`;
+      document.getElementById("ticketGranTotal").innerText = "$0.00 MXN";
+      return;
+    }
+
+    let granTotal = 0;
+    cont.innerHTML = ticket.map((item, idx) => {
+      granTotal += item.subtotal;
+      return `
+        <div class="cart-item">
+          <div>
+            <div style="font-weight:600;">${item.qty}x ${item.nombre}</div>
+            <div style="font-size:0.8rem; color:#94a3b8;">$${item.unitario.toFixed(2)} c/u</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-weight:700;">$${item.subtotal.toFixed(2)}</span>
+            <button onclick="eliminarDelTicket(${idx})" style="background:transparent; border:none; color:#ef4444; font-size:1rem; cursor:pointer;">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById("ticketGranTotal").innerText = `$${granTotal.toFixed(2)} MXN`;
+  }
+
+  function eliminarDelTicket(idx) {
+    ticket.splice(idx, 1);
+    renderTicket();
+  }
+
+  function vaciarTicket() {
+    ticket = [];
+    renderTicket();
+  }
+
+  function copiarTicketWhatsApp() {
+    if (!ticket.length) return alert("El ticket está vacío.");
+    let texto = "*COTIZACIÓN*\n---------------------------\n";
+    let granTotal = 0;
+    ticket.forEach(i => {
+      granTotal += i.subtotal;
+      texto += `• ${i.qty}x ${i.nombre} ($${i.unitario.toFixed(2)} c/u) = *$${i.subtotal.toFixed(2)}*\n`;
+    });
+    texto += "---------------------------\n";
+    texto += `*TOTAL: $${granTotal.toFixed(2)} MXN*`;
+
+    navigator.clipboard.writeText(texto).then(() => {
+      alert("¡Cotización copiada al portapapeles! Lista para pegar en WhatsApp o notas.");
+    });
+  }
+
+  /* ================= BACKUP JSON ================= */
+  function exportarDatos() {
+    const blob = new Blob([JSON.stringify(productos, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "catalogo_precios_backup.json";
+    a.click();
+  }
+
+  function importarDatos(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const importados = JSON.parse(evt.target.result);
+        if (Array.isArray(importados)) {
+          productos = importados;
+          persistir();
+          renderCatalogo();
+          alert("¡Catálogo restaurado con éxito!");
+        }
+      } catch (err) {
+        alert("Error al leer el archivo JSON: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+</script>
+</body>
+</html>
