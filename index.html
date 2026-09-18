@@ -7,7 +7,6 @@
   <style>
     :root {
       --primary: #2563eb;
-      --primary-dark: #1d4ed8;
       --bg: #f8fafc;
       --surface: #ffffff;
       --text: #0f172a;
@@ -20,7 +19,9 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 90px; }
     .container { max-width: 820px; margin: 0 auto; }
     
-    /* Navegación */
+    .status-bar { font-size: 0.85rem; text-align: center; margin-bottom: 12px; color: var(--muted); }
+    .status-online { color: var(--success); font-weight: 700; }
+
     .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 50; background: var(--bg); padding: 6px 0; }
     .nav-btn { padding: 12px 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); font-weight: 600; font-size: 0.95rem; cursor: pointer; color: var(--muted); transition: all 0.2s; text-align: center; }
     .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
@@ -31,7 +32,6 @@
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
     .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
     
-    /* Formularios y Pasos */
     .step-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
     .step-header { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--primary); letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
@@ -40,7 +40,6 @@
     .form-control:focus { border-color: var(--primary); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
-    /* Rangos */
     .tier-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr auto; gap: 8px; align-items: center; margin-bottom: 8px; background: #fff; padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
     .btn-action { padding: 8px 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-primary { background: var(--primary); color: #fff; width: 100%; padding: 14px; font-size: 1.05rem; }
@@ -48,17 +47,14 @@
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
 
-    /* Catálogo */
     .cat-group { margin-bottom: 24px; }
     .cat-header { font-size: 1.1rem; font-weight: 800; color: #1e293b; padding-bottom: 6px; border-bottom: 2px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; }
     .prod-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
     .prod-head { display: flex; justify-content: space-between; align-items: flex-start; }
     .prod-name { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
-    .prod-price { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
     .tier-badge-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
     .tier-pill { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
 
-    /* Cotizador */
     .cart-float { background: #0f172a; color: white; border-radius: 14px; padding: 16px; margin-top: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 0.95rem; }
     .cart-total { font-size: 1.4rem; font-weight: 800; display: flex; justify-content: space-between; padding-top: 12px; margin-top: 8px; border-top: 2px solid #334155; }
@@ -67,6 +63,8 @@
 <body>
 
 <div class="container">
+  <div class="status-bar" id="syncStatus">🔄 Conectando con la base de datos central...</div>
+
   <!-- Navegación -->
   <div class="nav-tabs">
     <button class="nav-btn active" onclick="verTab('agregar')">➕ Nuevo Producto</button>
@@ -124,29 +122,22 @@
 
         <div id="mayoreoSection" style="display: none; margin-top: 10px;">
           <p style="font-size:0.85rem; color:var(--muted); margin-bottom:10px;">
-            Agrega los rangos que necesites. Deja "Hasta" vacío si el precio aplica de esa cantidad en adelante (ej. de 50 a más).
+            Agrega los rangos que necesites. Deja "Hasta" vacío si el precio aplica de esa cantidad en adelante.
           </p>
           <div id="tiersContainer"></div>
           <button type="button" class="btn-action btn-secondary btn-sm" onclick="agregarFilaRango()">+ Agregar Otro Rango</button>
         </div>
       </div>
 
-      <button type="button" id="btnGuardar" class="btn-action btn-primary" onclick="guardarProducto()">Guardar Producto</button>
-    </div>
-
-    <!-- Backup de datos -->
-    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.85rem;">
-      <button class="btn-action btn-secondary btn-sm" onclick="exportarDatos()">📥 Respaldar Catálogo (JSON)</button>
-      <button class="btn-action btn-secondary btn-sm" onclick="document.getElementById('importFile').click()">📤 Restaurar Respaldo</button>
-      <input type="file" id="importFile" style="display:none" onchange="importarDatos(event)">
+      <button type="button" id="btnGuardar" class="btn-action btn-primary" onclick="guardarProducto()">Guardar en la Nube</button>
     </div>
   </div>
 
   <!-- ================= VISTA 2: CATÁLOGO GENERAL ================= -->
   <div id="view-catalogo" class="view-section">
     <div class="card">
-      <div class="card-title">Catálogo General</div>
-      <input type="text" id="buscarCatalogo" class="form-control" placeholder="🔍 Filtrar por nombre de producto o categoría..." oninput="renderCatalogo()">
+      <div class="card-title">Catálogo General Compartido</div>
+      <input type="text" id="buscarCatalogo" class="form-control" placeholder="🔍 Filtrar por nombre o categoría..." oninput="renderCatalogo()">
       <div id="listaCatalogoContainer"></div>
     </div>
   </div>
@@ -200,24 +191,38 @@
 </div>
 
 <script>
-  // Estructura principal en memoria
-  let productos = JSON.parse(localStorage.getItem("catalogo_productos")) || [];
+  // Conexión directa a tu Realtime Database de Firebase
+  const FIREBASE_DB_URL = "https://cotizadorv2tinta-default-rtdb.firebaseio.com"; 
+
+  let productos = [];
   let ticket = [];
 
-  // Al cargar
   window.onload = function() {
-    actualizarSelectCategorias();
-    renderCatalogo();
-    actualizarSelectCotizador();
+    cargarProductosDesdeNube();
   };
 
-  function persistir() {
-    localStorage.setItem("catalogo_productos", JSON.stringify(productos));
-    actualizarSelectCategorias();
-    actualizarSelectCotizador();
+  async function cargarProductosDesdeNube() {
+    const status = document.getElementById("syncStatus");
+    status.innerHTML = "🔄 Sincronizando con la nube...";
+    try {
+      const res = await fetch(`${FIREBASE_DB_URL}/productos.json`);
+      const data = await res.json();
+      
+      productos = [];
+      if (data) {
+        for (let key in data) {
+          productos.push({ id: key, ...data[key] });
+        }
+      }
+      status.innerHTML = "🟢 <span class='status-online'>En línea</span>: Todos los cambios se reflejan en tiempo real.";
+      actualizarSelectCategorias();
+      renderCatalogo();
+      actualizarSelectCotizador();
+    } catch (e) {
+      status.innerHTML = "⚠️ Error de conexión a la base de datos.";
+    }
   }
 
-  /* ================= PESTAÑAS ================= */
   function verTab(tab) {
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
@@ -237,7 +242,6 @@
     }
   }
 
-  /* ================= PASO 1 & CATEGORÍAS ================= */
   function actualizarSelectCategorias() {
     const sel = document.getElementById("categoriaSelect");
     const cats = [...new Set(productos.map(p => p.categoria))].filter(Boolean);
@@ -250,7 +254,6 @@
     if (selVal) document.getElementById("categoriaInput").value = selVal;
   }
 
-  /* ================= PASO 4: MAYOREO DINÁMICO ================= */
   function toggleMayoreoSection() {
     const check = document.getElementById("tieneMayoreoCheck").checked;
     document.getElementById("mayoreoSection").style.display = check ? "block" : "none";
@@ -284,17 +287,16 @@
     container.appendChild(div);
   }
 
-  /* ================= GUARDAR / EDITAR PRODUCTO ================= */
-  function guardarProducto() {
+  async function guardarProducto() {
     const editId = document.getElementById("editId").value;
     const categoria = document.getElementById("categoriaInput").value.trim();
     const nombre = document.getElementById("nombreInput").value.trim();
     const precioBase = parseFloat(document.getElementById("precioBaseInput").value);
     const tieneMayoreo = document.getElementById("tieneMayoreoCheck").checked;
 
-    if (!categoria) return alert("Por favor ingresa o selecciona una categoría.");
-    if (!nombre) return alert("Por favor ingresa el nombre del producto.");
-    if (isNaN(precioBase) || precioBase < 0) return alert("Por favor ingresa un precio unitario válido.");
+    if (!categoria) return alert("Ingresa o selecciona una categoría.");
+    if (!nombre) return alert("Ingresa el nombre del producto.");
+    if (isNaN(precioBase) || precioBase < 0) return alert("Ingresa un precio unitario válido.");
 
     let rangos = [];
     if (tieneMayoreo) {
@@ -304,46 +306,51 @@
         const hVal = f.querySelector(".tier-hasta").value;
         const h = hVal !== "" ? parseInt(hVal) : null;
         const p = parseFloat(f.querySelector(".tier-precio").value);
-
-        if (!isNaN(d) && !isNaN(p)) {
-          rangos.push({ desde: d, hasta: h, precio: p });
-        }
+        if (!isNaN(d) && !isNaN(p)) rangos.push({ desde: d, hasta: h, precio: p });
       });
-      // Ordenar rangos de menor a mayor
       rangos.sort((a, b) => a.desde - b.desde);
     }
 
-    if (editId) {
-      // Editar existente
-      const idx = productos.findIndex(p => p.id === editId);
-      if (idx !== -1) {
-        productos[idx] = { id: editId, categoria, nombre, precioBase, tieneMayoreo: (rangos.length > 0), rangos };
-      }
-      alert("¡Producto actualizado exitosamente!");
-      cancelarEdicion();
-    } else {
-      // Nuevo
-      const nuevo = {
-        id: "prod_" + Date.now(),
-        categoria,
-        nombre,
-        precioBase,
-        tieneMayoreo: (rangos.length > 0),
-        rangos
-      };
-      productos.push(nuevo);
-      alert("¡Producto agregado correctamente!");
-      limpiarFormulario();
-    }
+    const payload = {
+      categoria,
+      nombre,
+      precioBase,
+      tieneMayoreo: (rangos.length > 0),
+      rangos
+    };
 
-    persistir();
-    verTab('catalogo');
+    document.getElementById("btnGuardar").innerText = "Guardando en la nube...";
+    document.getElementById("btnGuardar").disabled = true;
+
+    try {
+      if (editId) {
+        await fetch(`${FIREBASE_DB_URL}/productos/${editId}.json`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+        alert("¡Producto actualizado exitosamente en la nube!");
+      } else {
+        await fetch(`${FIREBASE_DB_URL}/productos.json`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        alert("¡Producto guardado en la base de datos central!");
+      }
+      limpiarFormulario();
+      await cargarProductosDesdeNube();
+      verTab('catalogo');
+    } catch (err) {
+      alert("Error al conectar con la base de datos: " + err.message);
+    } finally {
+      document.getElementById("btnGuardar").innerText = "Guardar en la Nube";
+      document.getElementById("btnGuardar").disabled = false;
+    }
   }
 
   function limpiarFormulario() {
     document.getElementById("editId").value = "";
     document.getElementById("formTitle").innerText = "Insertar Nuevo Producto";
-    document.getElementById("btnGuardar").innerText = "Guardar Producto";
+    document.getElementById("btnGuardar").innerText = "Guardar en la Nube";
     document.getElementById("btnCancelEdit").style.display = "none";
     document.getElementById("categoriaSelect").value = "";
     document.getElementById("categoriaInput").value = "";
@@ -360,8 +367,8 @@
 
     verTab('agregar');
     document.getElementById("editId").value = prod.id;
-    document.getElementById("formTitle").innerText = "Editar Producto: " + prod.nombre;
-    document.getElementById("btnGuardar").innerText = "Actualizar Cambios";
+    document.getElementById("formTitle").innerText = "Editar: " + prod.nombre;
+    document.getElementById("btnGuardar").innerText = "Actualizar en la Nube";
     document.getElementById("btnCancelEdit").style.display = "inline-flex";
 
     document.getElementById("categoriaInput").value = prod.categoria;
@@ -373,9 +380,7 @@
 
     document.getElementById("tiersContainer").innerHTML = "";
     if (prod.rangos && prod.rangos.length > 0) {
-      prod.rangos.forEach(r => {
-        agregarFilaRango(r.desde, r.hasta !== null ? r.hasta : '', r.precio);
-      });
+      prod.rangos.forEach(r => agregarFilaRango(r.desde, r.hasta !== null ? r.hasta : '', r.precio));
     }
   }
 
@@ -384,25 +389,26 @@
     verTab('catalogo');
   }
 
-  function eliminarProducto(id) {
-    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-      productos = productos.filter(p => p.id !== id);
-      persistir();
-      renderCatalogo();
+  async function eliminarProducto(id) {
+    if (confirm("¿Estás seguro de que deseas eliminar este producto de la nube? Se borrará para todos.")) {
+      try {
+        await fetch(`${FIREBASE_DB_URL}/productos/${id}.json`, { method: 'DELETE' });
+        await cargarProductosDesdeNube();
+      } catch (e) {
+        alert("Error al eliminar: " + e.message);
+      }
     }
   }
 
-  /* ================= VISTA: CATÁLOGO GENERAL ================= */
   function renderCatalogo() {
     const cont = document.getElementById("listaCatalogoContainer");
     const filtro = document.getElementById("buscarCatalogo") ? document.getElementById("buscarCatalogo").value.toLowerCase() : "";
 
     if (!productos.length) {
-      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay productos registrados aún. Comienza agregando uno en "Nuevo Producto".</p>`;
+      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay productos en la base de datos. Agrega uno en la primera pestaña.</p>`;
       return;
     }
 
-    // Agrupar por categoría
     const grupos = {};
     productos.forEach(p => {
       if (p.nombre.toLowerCase().includes(filtro) || p.categoria.toLowerCase().includes(filtro)) {
@@ -435,7 +441,6 @@
             </div>
         `;
 
-        // Si tiene rangos de mayoreo, mostrarlos todos
         if (p.tieneMayoreo && p.rangos && p.rangos.length > 0) {
           html += `<div class="tier-badge-list">`;
           p.rangos.forEach(r => {
@@ -447,18 +452,15 @@
 
         html += `</div>`;
       });
-
       html += `</div>`;
     }
-
     cont.innerHTML = html;
   }
 
-  /* ================= COTIZADOR ================= */
   function actualizarSelectCotizador() {
     const sel = document.getElementById("cotizProductoSelect");
     if (!productos.length) {
-      sel.innerHTML = '<option value="">(No hay productos en catálogo)</option>';
+      sel.innerHTML = '<option value="">(No hay productos disponibles)</option>';
       return;
     }
     sel.innerHTML = productos.map(p => `<option value="${p.id}">[${p.categoria}] ${p.nombre}</option>`).join('');
@@ -474,20 +476,19 @@
       return { precio: prod.precioBase, rangoDesc: "Precio unitario estándar" };
     }
 
-    // Buscar si entra en algún rango
     for (let r of prod.rangos) {
       if (r.hasta !== null) {
         if (qty >= r.desde && qty <= r.hasta) {
-          return { precio: r.precio, rangoDesc: `Aplica mayoreo: ${r.desde} a ${r.hasta} piezas` };
+          return { precio: r.precio, rangoDesc: `Mayoreo aplicado: ${r.desde} a ${r.hasta} piezas` };
         }
       } else {
         if (qty >= r.desde) {
-          return { precio: r.precio, rangoDesc: `Aplica mayoreo: ${r.desde} piezas o más` };
+          return { precio: r.precio, rangoDesc: `Mayoreo aplicado: ${r.desde} piezas o más` };
         }
       }
     }
 
-    return { precio: prod.precioBase, rangoDesc: "Precio unitario base (no alcanza rango)" };
+    return { precio: prod.precioBase, rangoDesc: "Precio base (no alcanza escala de mayoreo)" };
   }
 
   function calcularPrecioCotizacion() {
@@ -578,38 +579,8 @@
     texto += `*TOTAL: $${granTotal.toFixed(2)} MXN*`;
 
     navigator.clipboard.writeText(texto).then(() => {
-      alert("¡Cotización copiada al portapapeles! Lista para pegar en WhatsApp o notas.");
+      alert("¡Cotización copiada al portapapeles para WhatsApp!");
     });
-  }
-
-  /* ================= BACKUP JSON ================= */
-  function exportarDatos() {
-    const blob = new Blob([JSON.stringify(productos, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "catalogo_precios_backup.json";
-    a.click();
-  }
-
-  function importarDatos(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-      try {
-        const importados = JSON.parse(evt.target.result);
-        if (Array.isArray(importados)) {
-          productos = importados;
-          persistir();
-          renderCatalogo();
-          alert("¡Catálogo restaurado con éxito!");
-        }
-      } catch (err) {
-        alert("Error al leer el archivo JSON: " + err.message);
-      }
-    };
-    reader.readAsText(file);
   }
 </script>
 </body>
