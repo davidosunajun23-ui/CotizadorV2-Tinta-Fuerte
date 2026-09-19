@@ -47,14 +47,13 @@
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
 
-    /* Estilos Catálogo Multinivel */
+    /* Estilos Catálogo */
     .cat-group { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
     .cat-header { font-size: 1.05rem; font-weight: 700; color: #1e293b; padding: 14px 16px; background: #f8fafc; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
     .cat-header:hover { background: #f1f5f9; }
     .cat-content { display: none; padding: 12px; background: #fff; border-top: 1px solid var(--border); }
     .cat-content.open { display: block; }
     
-    /* Subcategoría */
     .subcat-group { margin-bottom: 10px; border-left: 3px solid var(--primary); padding-left: 12px; }
     .subcat-header { font-size: 0.95rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -84,7 +83,7 @@
 <div class="container">
   <div class="status-bar" id="syncStatus">🔄 Conectando con la base de datos central...</div>
 
-  <!-- Pestañas Principales -->
+  <!-- Pestañas -->
   <div class="nav-tabs">
     <button class="nav-btn active" onclick="verTab('agregar')">➕ Nuevo Producto</button>
     <button class="nav-btn" onclick="verTab('catalogo')">📋 Catálogo General</button>
@@ -101,7 +100,7 @@
       
       <input type="hidden" id="editId" value="">
 
-      <!-- Paso 1: Categoría Principal -->
+      <!-- Paso 1 -->
       <div class="step-box">
         <div class="step-header">Paso 1: Categoría Principal</div>
         <div class="grid-2">
@@ -113,12 +112,12 @@
           </div>
           <div>
             <label>O Escribir Nueva</label>
-            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Gorras, Playeras, DTF..." oninput="actualizarSelectSubcategorias()">
+            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Impresión DTF, Gorras, Playeras..." oninput="actualizarSelectSubcategorias()">
           </div>
         </div>
       </div>
 
-      <!-- Paso 1.5: Subcategoría o Marca -->
+      <!-- Paso 1.5 -->
       <div class="step-box">
         <div class="step-header">Paso 1.5: Subcategoría / Marca (Opcional)</div>
         <div class="grid-2">
@@ -129,25 +128,25 @@
             </select>
           </div>
           <div>
-            <label>O Escribir Nueva Marca</label>
-            <input type="text" id="subcategoriaInput" class="form-control" placeholder="Ej. Yupoong, Explosion, Mayork...">
+            <label>O Escribir Nueva</label>
+            <input type="text" id="subcategoriaInput" class="form-control" placeholder="Ej. Yupoong, Mayork, Formato Chico...">
           </div>
         </div>
       </div>
 
-      <!-- Paso 2: Nombre -->
+      <!-- Paso 2 -->
       <div class="step-box">
         <div class="step-header">Paso 2: Nombre o Modelo del Producto</div>
-        <input type="text" id="nombreInput" class="form-control" placeholder="Ej. 6606 Trucker, Bala Cerrada, Cuello Redondo S-XL...">
+        <input type="text" id="nombreInput" class="form-control" placeholder="Ej. Chica, 6606 Trucker, Cuello Redondo...">
       </div>
 
-      <!-- Paso 3: Precio -->
+      <!-- Paso 3 -->
       <div class="step-box">
-        <div class="step-header">Paso 3: Precio Unitario Base (Menudeo)</div>
+        <div class="step-header">Paso 3: Precio Unitario Base (1 pieza / Menudeo)</div>
         <input type="number" id="precioBaseInput" class="form-control" placeholder="0.00" min="0" step="any">
       </div>
 
-      <!-- Paso 4: Mayoreo -->
+      <!-- Paso 4 -->
       <div class="step-box">
         <div class="step-header">
           <span>Paso 4: Precios de Mayoreo por Rangos</span>
@@ -158,7 +157,7 @@
 
         <div id="mayoreoSection" style="display: none; margin-top: 10px;">
           <p style="font-size:0.85rem; color:var(--muted); margin-bottom:10px;">
-            Agrega los rangos que necesites. Si aplica a partir de cierta cantidad en adelante, deja "Hasta" en blanco.
+            <b>Tip:</b> Si un precio es solo para una cantidad exacta (ej. solo 2 piezas), pon <b>2 en "Desde"</b> y <b>2 en "Hasta"</b>. Si es a partir de cierta cantidad en adelante (ej. 12 o más), deja "Hasta" en blanco.
           </p>
           <div id="tiersContainer"></div>
           <button type="button" class="btn-action btn-secondary btn-sm" onclick="agregarFilaRango()">+ Agregar Otro Rango</button>
@@ -169,7 +168,7 @@
     </div>
   </div>
 
-  <!-- ================= VISTA 2: CATÁLOGO EN ACORDEÓN ================= -->
+  <!-- ================= VISTA 2: CATÁLOGO ================= -->
   <div id="view-catalogo" class="view-section">
     <div class="card">
       <div class="card-title">Catálogo General Compartido</div>
@@ -186,7 +185,7 @@
       <div class="step-box">
         <label>1. Buscar Producto / Servicio</label>
         <div class="autocomplete-box">
-          <input type="text" id="cotizSearchInput" class="form-control" placeholder="🔍 Teclea aquí (ej. Yupoong, 6606, Mayork, Dryfit)..." autocomplete="off" oninput="buscarSugerencias(this.value)" onfocus="buscarSugerencias(this.value)">
+          <input type="text" id="cotizSearchInput" class="form-control" placeholder="🔍 Teclea aquí para buscar..." autocomplete="off" oninput="buscarSugerencias(this.value)" onfocus="buscarSugerencias(this.value)">
           <input type="hidden" id="selectedProdId" value="">
           <div class="results-dropdown" id="dropdownResultados"></div>
         </div>
@@ -287,7 +286,6 @@
     }
   }
 
-  /* ================= CATEGORÍAS Y SUBCATEGORÍAS ================= */
   function actualizarSelectCategorias() {
     const sel = document.getElementById("categoriaSelect");
     const cats = [...new Set(productos.map(p => p.categoria))].filter(Boolean);
@@ -321,7 +319,6 @@
     if (selVal) document.getElementById("subcategoriaInput").value = selVal;
   }
 
-  /* ================= MAYOREO ================= */
   function toggleMayoreoSection() {
     const check = document.getElementById("tieneMayoreoCheck").checked;
     document.getElementById("mayoreoSection").style.display = check ? "block" : "none";
@@ -337,11 +334,11 @@
     div.innerHTML = `
       <div>
         <label style="font-size:0.75rem;">Desde (pz)</label>
-        <input type="number" class="form-control tier-desde" value="${desde}" placeholder="12" min="1">
+        <input type="number" class="form-control tier-desde" value="${desde}" placeholder="2" min="1">
       </div>
       <div>
         <label style="font-size:0.75rem;">Hasta (pz)</label>
-        <input type="number" class="form-control tier-hasta" value="${hasta}" placeholder="49">
+        <input type="number" class="form-control tier-hasta" value="${hasta}" placeholder="2">
       </div>
       <div>
         <label style="font-size:0.75rem;">Precio unit. ($)</label>
@@ -355,7 +352,6 @@
     container.appendChild(div);
   }
 
-  /* ================= GUARDAR PRODUCTO ================= */
   async function guardarProducto() {
     const editId = document.getElementById("editId").value;
     const categoria = document.getElementById("categoriaInput").value.trim();
@@ -378,7 +374,17 @@
         const p = parseFloat(f.querySelector(".tier-precio").value);
         if (!isNaN(d) && !isNaN(p)) rangos.push({ desde: d, hasta: h, precio: p });
       });
+
+      // Ordenar rangos de menor a mayor
       rangos.sort((a, b) => a.desde - b.desde);
+
+      // Si alguien puso Desde: 2 y dejó Hasta vacío pero el siguiente rango es Desde: 3, 
+      // corregir automáticamente para que Hasta sea 2 (rango exacto de 1 pieza).
+      for (let i = 0; i < rangos.length; i++) {
+        if (rangos[i].hasta === null && i < rangos.length - 1) {
+          rangos[i].hasta = rangos[i + 1].desde - 1;
+        }
+      }
     }
 
     const payload = {
@@ -474,7 +480,7 @@
     }
   }
 
-  /* ================= CATÁLOGO EN ACORDEÓN DE DOS NIVELES ================= */
+  /* ================= CATÁLOGO ================= */
   function toggleCategoria(catKey) {
     categoriasAbiertas[catKey] = !categoriasAbiertas[catKey];
     renderCatalogo();
@@ -489,7 +495,6 @@
       return;
     }
 
-    // Organizar: Categoria -> Subcategoria -> Productos
     const arbol = {};
     productos.forEach(p => {
       const sub = p.subcategoria || "General";
@@ -530,7 +535,7 @@
       for (const sub in arbol[cat]) {
         html += `<div class="subcat-group">`;
         if (sub !== "General") {
-          html += `<div class="subcat-header">🏷️ Marca: ${sub}</div>`;
+          html += `<div class="subcat-header">🏷️ ${sub}</div>`;
         }
 
         arbol[cat][sub].forEach(p => {
@@ -539,7 +544,7 @@
               <div class="prod-head">
                 <div>
                   <div class="prod-name">${p.nombre}</div>
-                  <div style="font-size:0.85rem; color:var(--muted);">Precio unitario: <b style="color:var(--text); font-size:0.95rem;">$${p.precioBase.toFixed(2)}</b></div>
+                  <div style="font-size:0.85rem; color:var(--muted);">1 pz (Base): <b style="color:var(--text); font-size:0.95rem;">$${p.precioBase.toFixed(2)}</b></div>
                 </div>
                 <div style="display:flex; gap:6px;">
                   <button class="btn-action btn-secondary btn-sm" onclick="editarProducto('${p.id}')">✏️ Editar</button>
@@ -551,7 +556,14 @@
           if (p.tieneMayoreo && p.rangos && p.rangos.length > 0) {
             html += `<div class="tier-badge-list">`;
             p.rangos.forEach(r => {
-              const labelRango = r.hasta ? `${r.desde} a ${r.hasta} pz` : `${r.desde}+ pz`;
+              let labelRango = "";
+              if (r.hasta === null) {
+                labelRango = `${r.desde}+ pz`;
+              } else if (r.desde === r.hasta) {
+                labelRango = `${r.desde} pz`; // Si es solo 1 pieza exacta
+              } else {
+                labelRango = `${r.desde} a ${r.hasta} pz`;
+              }
               html += `<span class="tier-pill">📦 ${labelRango}: <b>$${r.precio.toFixed(2)}</b> c/u</span>`;
             });
             html += `</div>`;
@@ -568,7 +580,7 @@
     cont.innerHTML = html;
   }
 
-  /* ================= AUTOCOMPLETADO TIPO GOOGLE ================= */
+  /* ================= AUTOCOMPLETADO Y SELECCIÓN ================= */
   function buscarSugerencias(query) {
     const dropdown = document.getElementById("dropdownResultados");
     const q = query.toLowerCase().trim();
@@ -628,20 +640,28 @@
     calcularPrecioCotizacion();
   }
 
+  /* ================= LÓGICA DE CÁLCULO EXACTO POR CANTIDAD ================= */
   function obtenerPrecioParaCantidad(prod, qty) {
     if (!prod.tieneMayoreo || !prod.rangos || !prod.rangos.length) {
-      return { precio: prod.precioBase, rangoDesc: "Precio unitario estándar" };
+      return { precio: prod.precioBase, rangoDesc: "Precio unitario estándar (1 pieza)" };
     }
 
+    // 1. Buscar coincidencia exacta en rangos cerrados (ej: 2 a 2 pz, o 3 a 5 pz)
     for (let r of prod.rangos) {
       if (r.hasta !== null) {
         if (qty >= r.desde && qty <= r.hasta) {
-          return { precio: r.precio, rangoDesc: `Mayoreo aplicado: ${r.desde} a ${r.hasta} piezas` };
+          const desc = (r.desde === r.hasta) 
+            ? `Mayoreo aplicado: precio especial por ${r.desde} pz` 
+            : `Mayoreo aplicado: rango ${r.desde} a ${r.hasta} piezas`;
+          return { precio: r.precio, rangoDesc: desc };
         }
-      } else {
-        if (qty >= r.desde) {
-          return { precio: r.precio, rangoDesc: `Mayoreo aplicado: ${r.desde} piezas o más` };
-        }
+      }
+    }
+
+    // 2. Si no cayó en un rango cerrado, buscar en rangos abiertos (ej: 12+ pz)
+    for (let r of prod.rangos) {
+      if (r.hasta === null && qty >= r.desde) {
+        return { precio: r.precio, rangoDesc: `Mayoreo aplicado: ${r.desde} piezas o más` };
       }
     }
 
@@ -669,7 +689,7 @@
     const qty = parseInt(document.getElementById("cotizCantidad").value) || 1;
     const prod = productos.find(p => p.id === id);
 
-    if (!prod) return alert("Por favor busca y selecciona un producto de la lista desplegable.");
+    if (!prod) return alert("Por favor busca y selecciona un producto.");
 
     const calc = obtenerPrecioParaCantidad(prod, qty);
     const subtotal = calc.precio * qty;
