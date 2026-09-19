@@ -47,26 +47,29 @@
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
 
-    /* Estilos Catálogo y Acordeón */
+    /* Estilos Catálogo Multinivel */
     .cat-group { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
-    .cat-header { font-size: 1.05rem; font-weight: 700; color: #1e293b; padding: 14px 16px; background: #f8fafc; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: background 0.15s; }
+    .cat-header { font-size: 1.05rem; font-weight: 700; color: #1e293b; padding: 14px 16px; background: #f8fafc; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
     .cat-header:hover { background: #f1f5f9; }
     .cat-content { display: none; padding: 12px; background: #fff; border-top: 1px solid var(--border); }
     .cat-content.open { display: block; }
-    .cat-toggle-icon { font-size: 0.85rem; color: var(--muted); transition: transform 0.2s; }
     
-    .prod-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .prod-head { display: flex; justify-content: space-between; align-items: flex-start; }
-    .prod-name { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
-    .tier-badge-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    .tier-pill { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+    /* Subcategoría */
+    .subcat-group { margin-bottom: 10px; border-left: 3px solid var(--primary); padding-left: 12px; }
+    .subcat-header { font-size: 0.95rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* Buscador Autocompletado tipo Google */
+    .prod-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .prod-head { display: flex; justify-content: space-between; align-items: flex-start; }
+    .prod-name { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .tier-badge-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .tier-pill { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+
+    /* Buscador Autocompletado */
     .autocomplete-box { position: relative; width: 100%; margin-bottom: 10px; }
     .results-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); max-height: 260px; overflow-y: auto; z-index: 100; display: none; margin-top: 4px; }
     .result-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
     .result-item:last-child { border-bottom: none; }
-    .result-item:hover, .result-item.active { background: #eff6ff; }
+    .result-item:hover { background: #eff6ff; }
     .result-item-name { font-weight: 600; font-size: 0.95rem; }
     .result-item-cat { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 700; }
     .result-item-price { font-size: 0.9rem; font-weight: 700; color: var(--primary); }
@@ -81,7 +84,7 @@
 <div class="container">
   <div class="status-bar" id="syncStatus">🔄 Conectando con la base de datos central...</div>
 
-  <!-- Navegación -->
+  <!-- Pestañas Principales -->
   <div class="nav-tabs">
     <button class="nav-btn active" onclick="verTab('agregar')">➕ Nuevo Producto</button>
     <button class="nav-btn" onclick="verTab('catalogo')">📋 Catálogo General</button>
@@ -98,9 +101,9 @@
       
       <input type="hidden" id="editId" value="">
 
-      <!-- Paso 1 -->
+      <!-- Paso 1: Categoría Principal -->
       <div class="step-box">
-        <div class="step-header">Paso 1: Categoría</div>
+        <div class="step-header">Paso 1: Categoría Principal</div>
         <div class="grid-2">
           <div>
             <label>Seleccionar Existente</label>
@@ -110,24 +113,41 @@
           </div>
           <div>
             <label>O Escribir Nueva</label>
-            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Blanks, Gorras, DTF...">
+            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Gorras, Playeras, DTF..." oninput="actualizarSelectSubcategorias()">
           </div>
         </div>
       </div>
 
-      <!-- Paso 2 -->
+      <!-- Paso 1.5: Subcategoría o Marca -->
       <div class="step-box">
-        <div class="step-header">Paso 2: Nombre del Producto</div>
-        <input type="text" id="nombreInput" class="form-control" placeholder="Ej. Playera Yazbek Blanca S-XL, Yupoong 6606...">
+        <div class="step-header">Paso 1.5: Subcategoría / Marca (Opcional)</div>
+        <div class="grid-2">
+          <div>
+            <label>Subcategoría Existente</label>
+            <select id="subcategoriaSelect" class="form-control" onchange="seleccionarSubcategoriaExistente()">
+              <option value="">-- General / Ninguna --</option>
+            </select>
+          </div>
+          <div>
+            <label>O Escribir Nueva Marca</label>
+            <input type="text" id="subcategoriaInput" class="form-control" placeholder="Ej. Yupoong, Explosion, Mayork...">
+          </div>
+        </div>
       </div>
 
-      <!-- Paso 3 -->
+      <!-- Paso 2: Nombre -->
       <div class="step-box">
-        <div class="step-header">Paso 3: Precio Unitario Base</div>
+        <div class="step-header">Paso 2: Nombre o Modelo del Producto</div>
+        <input type="text" id="nombreInput" class="form-control" placeholder="Ej. 6606 Trucker, Bala Cerrada, Cuello Redondo S-XL...">
+      </div>
+
+      <!-- Paso 3: Precio -->
+      <div class="step-box">
+        <div class="step-header">Paso 3: Precio Unitario Base (Menudeo)</div>
         <input type="number" id="precioBaseInput" class="form-control" placeholder="0.00" min="0" step="any">
       </div>
 
-      <!-- Paso 4 -->
+      <!-- Paso 4: Mayoreo -->
       <div class="step-box">
         <div class="step-header">
           <span>Paso 4: Precios de Mayoreo por Rangos</span>
@@ -138,7 +158,7 @@
 
         <div id="mayoreoSection" style="display: none; margin-top: 10px;">
           <p style="font-size:0.85rem; color:var(--muted); margin-bottom:10px;">
-            Agrega los rangos que necesites. Deja "Hasta" vacío si el precio aplica de esa cantidad en adelante.
+            Agrega los rangos que necesites. Si aplica a partir de cierta cantidad en adelante, deja "Hasta" en blanco.
           </p>
           <div id="tiersContainer"></div>
           <button type="button" class="btn-action btn-secondary btn-sm" onclick="agregarFilaRango()">+ Agregar Otro Rango</button>
@@ -149,25 +169,24 @@
     </div>
   </div>
 
-  <!-- ================= VISTA 2: CATÁLOGO GENERAL DESPLEGABLE ================= -->
+  <!-- ================= VISTA 2: CATÁLOGO EN ACORDEÓN ================= -->
   <div id="view-catalogo" class="view-section">
     <div class="card">
       <div class="card-title">Catálogo General Compartido</div>
-      <input type="text" id="buscarCatalogo" class="form-control" placeholder="🔍 Filtrar por nombre o categoría..." oninput="renderCatalogo()">
+      <input type="text" id="buscarCatalogo" class="form-control" placeholder="🔍 Filtrar por categoría, marca o nombre..." oninput="renderCatalogo()">
       <div id="listaCatalogoContainer"></div>
     </div>
   </div>
 
-  <!-- ================= VISTA 3: COTIZADOR CON AUTOCOMPLETADO ================= -->
+  <!-- ================= VISTA 3: COTIZADOR ================= -->
   <div id="view-cotizador" class="view-section">
     <div class="card">
       <div class="card-title">Cotizador Rápido</div>
       
       <div class="step-box">
-        <label>1. Buscar y Elegir Producto / Servicio</label>
-        <!-- Buscador tipo Google -->
+        <label>1. Buscar Producto / Servicio</label>
         <div class="autocomplete-box">
-          <input type="text" id="cotizSearchInput" class="form-control" placeholder="🔍 Teclea aquí para buscar (ej. Dryfit, Yazbek, Bordado)..." autocomplete="off" oninput="buscarSugerencias(this.value)" onfocus="buscarSugerencias(this.value)">
+          <input type="text" id="cotizSearchInput" class="form-control" placeholder="🔍 Teclea aquí (ej. Yupoong, 6606, Mayork, Dryfit)..." autocomplete="off" oninput="buscarSugerencias(this.value)" onfocus="buscarSugerencias(this.value)">
           <input type="hidden" id="selectedProdId" value="">
           <div class="results-dropdown" id="dropdownResultados"></div>
         </div>
@@ -193,7 +212,7 @@
       <button type="button" class="btn-action btn-primary" onclick="agregarAlTicket()">+ Sumar a la Cotización</button>
     </div>
 
-    <!-- Ticket Flotante -->
+    <!-- Ticket -->
     <div class="cart-float" id="ticketBox">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <span style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:#94a3b8; font-weight:700;">Ticket Acumulado</span>
@@ -220,14 +239,12 @@
 
   let productos = [];
   let ticket = [];
-  let categoriasAbiertas = {}; // Recordar qué carpetas están desplegadas
+  let categoriasAbiertas = {};
 
   window.onload = function() {
     cargarProductosDesdeNube();
     document.addEventListener("click", function(e) {
-      if (!e.target.closest(".autocomplete-box")) {
-        cerrarSugerencias();
-      }
+      if (!e.target.closest(".autocomplete-box")) cerrarSugerencias();
     });
   };
 
@@ -270,18 +287,41 @@
     }
   }
 
+  /* ================= CATEGORÍAS Y SUBCATEGORÍAS ================= */
   function actualizarSelectCategorias() {
     const sel = document.getElementById("categoriaSelect");
     const cats = [...new Set(productos.map(p => p.categoria))].filter(Boolean);
     sel.innerHTML = '<option value="">-- Elige una existente --</option>' + 
       cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    actualizarSelectSubcategorias();
   }
 
   function seleccionarCategoriaExistente() {
     const selVal = document.getElementById("categoriaSelect").value;
-    if (selVal) document.getElementById("categoriaInput").value = selVal;
+    if (selVal) {
+      document.getElementById("categoriaInput").value = selVal;
+      actualizarSelectSubcategorias();
+    }
   }
 
+  function actualizarSelectSubcategorias() {
+    const catActual = document.getElementById("categoriaInput").value.trim();
+    const selSub = document.getElementById("subcategoriaSelect");
+    if (!catActual) {
+      selSub.innerHTML = '<option value="">-- General / Ninguna --</option>';
+      return;
+    }
+    const subs = [...new Set(productos.filter(p => p.categoria.toLowerCase() === catActual.toLowerCase()).map(p => p.subcategoria))].filter(Boolean);
+    selSub.innerHTML = '<option value="">-- General / Ninguna --</option>' + 
+      subs.map(s => `<option value="${s}">${s}</option>`).join('');
+  }
+
+  function seleccionarSubcategoriaExistente() {
+    const selVal = document.getElementById("subcategoriaSelect").value;
+    if (selVal) document.getElementById("subcategoriaInput").value = selVal;
+  }
+
+  /* ================= MAYOREO ================= */
   function toggleMayoreoSection() {
     const check = document.getElementById("tieneMayoreoCheck").checked;
     document.getElementById("mayoreoSection").style.display = check ? "block" : "none";
@@ -315,15 +355,17 @@
     container.appendChild(div);
   }
 
+  /* ================= GUARDAR PRODUCTO ================= */
   async function guardarProducto() {
     const editId = document.getElementById("editId").value;
     const categoria = document.getElementById("categoriaInput").value.trim();
+    const subcategoria = document.getElementById("subcategoriaInput").value.trim() || "General";
     const nombre = document.getElementById("nombreInput").value.trim();
     const precioBase = parseFloat(document.getElementById("precioBaseInput").value);
     const tieneMayoreo = document.getElementById("tieneMayoreoCheck").checked;
 
-    if (!categoria) return alert("Ingresa o selecciona una categoría.");
-    if (!nombre) return alert("Ingresa el nombre del producto.");
+    if (!categoria) return alert("Ingresa o selecciona una categoría principal.");
+    if (!nombre) return alert("Ingresa el nombre o modelo del producto.");
     if (isNaN(precioBase) || precioBase < 0) return alert("Ingresa un precio unitario válido.");
 
     let rangos = [];
@@ -341,6 +383,7 @@
 
     const payload = {
       categoria,
+      subcategoria,
       nombre,
       precioBase,
       tieneMayoreo: (rangos.length > 0),
@@ -356,19 +399,19 @@
           method: 'PUT',
           body: JSON.stringify(payload)
         });
-        alert("¡Producto actualizado exitosamente en la nube!");
+        alert("¡Producto actualizado exitosamente!");
       } else {
         await fetch(`${FIREBASE_DB_URL}/productos.json`, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
-        alert("¡Producto guardado en la base de datos central!");
+        alert("¡Producto guardado exitosamente!");
       }
       limpiarFormulario();
       await cargarProductosDesdeNube();
       verTab('catalogo');
     } catch (err) {
-      alert("Error al conectar con la base de datos: " + err.message);
+      alert("Error al conectar: " + err.message);
     } finally {
       document.getElementById("btnGuardar").innerText = "Guardar en la Nube";
       document.getElementById("btnGuardar").disabled = false;
@@ -382,6 +425,8 @@
     document.getElementById("btnCancelEdit").style.display = "none";
     document.getElementById("categoriaSelect").value = "";
     document.getElementById("categoriaInput").value = "";
+    document.getElementById("subcategoriaSelect").value = "";
+    document.getElementById("subcategoriaInput").value = "";
     document.getElementById("nombreInput").value = "";
     document.getElementById("precioBaseInput").value = "";
     document.getElementById("tieneMayoreoCheck").checked = false;
@@ -400,6 +445,7 @@
     document.getElementById("btnCancelEdit").style.display = "inline-flex";
 
     document.getElementById("categoriaInput").value = prod.categoria;
+    document.getElementById("subcategoriaInput").value = prod.subcategoria !== "General" ? prod.subcategoria : "";
     document.getElementById("nombreInput").value = prod.nombre;
     document.getElementById("precioBaseInput").value = prod.precioBase;
     
@@ -418,7 +464,7 @@
   }
 
   async function eliminarProducto(id) {
-    if (confirm("¿Estás seguro de que deseas eliminar este producto de la nube? Se borrará para todos.")) {
+    if (confirm("¿Estás seguro de que deseas eliminar este producto? Se borrará para todos.")) {
       try {
         await fetch(`${FIREBASE_DB_URL}/productos/${id}.json`, { method: 'DELETE' });
         await cargarProductosDesdeNube();
@@ -428,7 +474,7 @@
     }
   }
 
-  /* ================= CATÁLOGO CON ACORDEÓN DESPLEGABLE ================= */
+  /* ================= CATÁLOGO EN ACORDEÓN DE DOS NIVELES ================= */
   function toggleCategoria(catKey) {
     categoriasAbiertas[catKey] = !categoriasAbiertas[catKey];
     renderCatalogo();
@@ -439,26 +485,35 @@
     const filtro = document.getElementById("buscarCatalogo") ? document.getElementById("buscarCatalogo").value.toLowerCase().trim() : "";
 
     if (!productos.length) {
-      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay productos en la base de datos. Agrega uno en la primera pestaña.</p>`;
+      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay productos todavía.</p>`;
       return;
     }
 
-    const grupos = {};
+    // Organizar: Categoria -> Subcategoria -> Productos
+    const arbol = {};
     productos.forEach(p => {
-      if (p.nombre.toLowerCase().includes(filtro) || p.categoria.toLowerCase().includes(filtro)) {
-        if (!grupos[p.categoria]) grupos[p.categoria] = [];
-        grupos[p.categoria].push(p);
+      const sub = p.subcategoria || "General";
+      const coincide = p.nombre.toLowerCase().includes(filtro) || 
+                       p.categoria.toLowerCase().includes(filtro) || 
+                       sub.toLowerCase().includes(filtro);
+
+      if (coincide) {
+        if (!arbol[p.categoria]) arbol[p.categoria] = {};
+        if (!arbol[p.categoria][sub]) arbol[p.categoria][sub] = [];
+        arbol[p.categoria][sub].push(p);
       }
     });
 
-    if (Object.keys(grupos).length === 0) {
-      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No se encontraron productos coincidentes.</p>`;
+    if (Object.keys(arbol).length === 0) {
+      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No se encontraron resultados.</p>`;
       return;
     }
 
     let html = "";
-    for (const cat in grupos) {
-      // Si el usuario escribe en el filtro, mantenemos abiertas todas las coincidencias
+    for (const cat in arbol) {
+      let totalProdCat = 0;
+      for (const s in arbol[cat]) totalProdCat += arbol[cat][s].length;
+
       const estaAbierta = filtro !== "" ? true : !!categoriasAbiertas[cat];
       const flecha = estaAbierta ? "▲" : "▼";
       const displayClass = estaAbierta ? "open" : "";
@@ -466,45 +521,54 @@
       html += `
         <div class="cat-group">
           <div class="cat-header" onclick="toggleCategoria('${cat}')">
-            <span>📁 ${cat} <span style="font-size:0.85rem; color:var(--muted); font-weight:normal; margin-left:6px;">(${grupos[cat].length} productos)</span></span>
-            <span class="cat-toggle-icon">${flecha}</span>
+            <span>📁 ${cat} <span style="font-size:0.85rem; color:var(--muted); font-weight:normal; margin-left:6px;">(${totalProdCat} productos)</span></span>
+            <span style="font-size:0.85rem; color:var(--muted);">${flecha}</span>
           </div>
           <div class="cat-content ${displayClass}">
       `;
-      
-      grupos[cat].forEach(p => {
-        html += `
-          <div class="prod-card">
-            <div class="prod-head">
-              <div>
-                <div class="prod-name">${p.nombre}</div>
-                <div style="font-size:0.85rem; color:var(--muted);">Unitario: <b style="color:var(--text); font-size:1rem;">$${p.precioBase.toFixed(2)}</b></div>
-              </div>
-              <div style="display:flex; gap:6px;">
-                <button class="btn-action btn-secondary btn-sm" onclick="editarProducto('${p.id}')">✏️ Editar</button>
-                <button class="btn-action btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">🗑️</button>
-              </div>
-            </div>
-        `;
 
-        if (p.tieneMayoreo && p.rangos && p.rangos.length > 0) {
-          html += `<div class="tier-badge-list">`;
-          p.rangos.forEach(r => {
-            const labelRango = r.hasta ? `${r.desde} a ${r.hasta} pz` : `${r.desde}+ pz`;
-            html += `<span class="tier-pill">📦 ${labelRango}: <b>$${r.precio.toFixed(2)}</b> c/u</span>`;
-          });
-          html += `</div>`;
+      for (const sub in arbol[cat]) {
+        html += `<div class="subcat-group">`;
+        if (sub !== "General") {
+          html += `<div class="subcat-header">🏷️ Marca: ${sub}</div>`;
         }
 
+        arbol[cat][sub].forEach(p => {
+          html += `
+            <div class="prod-card">
+              <div class="prod-head">
+                <div>
+                  <div class="prod-name">${p.nombre}</div>
+                  <div style="font-size:0.85rem; color:var(--muted);">Precio unitario: <b style="color:var(--text); font-size:0.95rem;">$${p.precioBase.toFixed(2)}</b></div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn-action btn-secondary btn-sm" onclick="editarProducto('${p.id}')">✏️ Editar</button>
+                  <button class="btn-action btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">🗑️</button>
+                </div>
+              </div>
+          `;
+
+          if (p.tieneMayoreo && p.rangos && p.rangos.length > 0) {
+            html += `<div class="tier-badge-list">`;
+            p.rangos.forEach(r => {
+              const labelRango = r.hasta ? `${r.desde} a ${r.hasta} pz` : `${r.desde}+ pz`;
+              html += `<span class="tier-pill">📦 ${labelRango}: <b>$${r.precio.toFixed(2)}</b> c/u</span>`;
+            });
+            html += `</div>`;
+          }
+
+          html += `</div>`;
+        });
+
         html += `</div>`;
-      });
+      }
 
       html += `</div></div>`;
     }
     cont.innerHTML = html;
   }
 
-  /* ================= BUSCADOR TIPO GOOGLE (AUTOCOMPLETADO) ================= */
+  /* ================= AUTOCOMPLETADO TIPO GOOGLE ================= */
   function buscarSugerencias(query) {
     const dropdown = document.getElementById("dropdownResultados");
     const q = query.toLowerCase().trim();
@@ -514,10 +578,12 @@
       return;
     }
 
-    const filtrados = productos.filter(p => 
-      p.nombre.toLowerCase().includes(q) || 
-      p.categoria.toLowerCase().includes(q)
-    );
+    const filtrados = productos.filter(p => {
+      const sub = p.subcategoria || "";
+      return p.nombre.toLowerCase().includes(q) || 
+             p.categoria.toLowerCase().includes(q) || 
+             sub.toLowerCase().includes(q);
+    });
 
     if (!filtrados.length) {
       dropdown.innerHTML = `<div style="padding:12px; font-size:0.85rem; color:var(--muted); text-align:center;">No hay resultados para "${query}"</div>`;
@@ -525,15 +591,20 @@
       return;
     }
 
-    dropdown.innerHTML = filtrados.slice(0, 8).map(p => `
-      <div class="result-item" onclick="seleccionarProductoCotizador('${p.id}')">
-        <div>
-          <div class="result-item-name">${p.nombre}</div>
-          <div class="result-item-cat">${p.categoria}</div>
+    dropdown.innerHTML = filtrados.slice(0, 8).map(p => {
+      const etiqueta = (p.subcategoria && p.subcategoria !== "General") 
+        ? `${p.categoria} • ${p.subcategoria}` 
+        : p.categoria;
+      return `
+        <div class="result-item" onclick="seleccionarProductoCotizador('${p.id}')">
+          <div>
+            <div class="result-item-name">${p.nombre}</div>
+            <div class="result-item-cat">${etiqueta}</div>
+          </div>
+          <div class="result-item-price">$${p.precioBase.toFixed(2)}</div>
         </div>
-        <div class="result-item-price">$${p.precioBase.toFixed(2)}</div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     dropdown.style.display = "block";
   }
@@ -547,9 +618,10 @@
     const prod = productos.find(p => p.id === id);
     if (!prod) return;
 
+    const sub = (prod.subcategoria && prod.subcategoria !== "General") ? ` (${prod.subcategoria})` : '';
     document.getElementById("selectedProdId").value = prod.id;
     document.getElementById("cotizSearchInput").value = prod.nombre;
-    document.getElementById("lblProdSeleccionado").innerText = `[${prod.categoria}] ${prod.nombre}`;
+    document.getElementById("lblProdSeleccionado").innerText = `[${prod.categoria}] ${prod.nombre}${sub}`;
     document.getElementById("productoSeleccionadoInfo").style.display = "block";
 
     cerrarSugerencias();
@@ -601,17 +673,17 @@
 
     const calc = obtenerPrecioParaCantidad(prod, qty);
     const subtotal = calc.precio * qty;
+    const subTxt = (prod.subcategoria && prod.subcategoria !== "General") ? ` [${prod.subcategoria}]` : '';
 
     ticket.push({
       id: prod.id,
-      nombre: prod.nombre,
+      nombre: prod.nombre + subTxt,
       categoria: prod.categoria,
       qty: qty,
       unitario: calc.precio,
       subtotal: subtotal
     });
 
-    // Limpiar buscador para permitir agregar otro producto rápido
     document.getElementById("selectedProdId").value = "";
     document.getElementById("cotizSearchInput").value = "";
     document.getElementById("productoSeleccionadoInfo").style.display = "none";
