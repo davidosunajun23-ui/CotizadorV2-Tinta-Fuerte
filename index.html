@@ -47,13 +47,29 @@
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
 
-    .cat-group { margin-bottom: 24px; }
-    .cat-header { font-size: 1.1rem; font-weight: 800; color: #1e293b; padding-bottom: 6px; border-bottom: 2px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; }
+    /* Estilos Catálogo y Acordeón */
+    .cat-group { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+    .cat-header { font-size: 1.05rem; font-weight: 700; color: #1e293b; padding: 14px 16px; background: #f8fafc; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: background 0.15s; }
+    .cat-header:hover { background: #f1f5f9; }
+    .cat-content { display: none; padding: 12px; background: #fff; border-top: 1px solid var(--border); }
+    .cat-content.open { display: block; }
+    .cat-toggle-icon { font-size: 0.85rem; color: var(--muted); transition: transform 0.2s; }
+    
     .prod-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
     .prod-head { display: flex; justify-content: space-between; align-items: flex-start; }
     .prod-name { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
     .tier-badge-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
     .tier-pill { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+
+    /* Buscador Autocompletado tipo Google */
+    .autocomplete-box { position: relative; width: 100%; margin-bottom: 10px; }
+    .results-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); max-height: 260px; overflow-y: auto; z-index: 100; display: none; margin-top: 4px; }
+    .result-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+    .result-item:last-child { border-bottom: none; }
+    .result-item:hover, .result-item.active { background: #eff6ff; }
+    .result-item-name { font-weight: 600; font-size: 0.95rem; }
+    .result-item-cat { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+    .result-item-price { font-size: 0.9rem; font-weight: 700; color: var(--primary); }
 
     .cart-float { background: #0f172a; color: white; border-radius: 14px; padding: 16px; margin-top: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 0.95rem; }
@@ -94,7 +110,7 @@
           </div>
           <div>
             <label>O Escribir Nueva</label>
-            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Playeras, Gorras, DTF...">
+            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Blanks, Gorras, DTF...">
           </div>
         </div>
       </div>
@@ -133,7 +149,7 @@
     </div>
   </div>
 
-  <!-- ================= VISTA 2: CATÁLOGO GENERAL ================= -->
+  <!-- ================= VISTA 2: CATÁLOGO GENERAL DESPLEGABLE ================= -->
   <div id="view-catalogo" class="view-section">
     <div class="card">
       <div class="card-title">Catálogo General Compartido</div>
@@ -142,16 +158,25 @@
     </div>
   </div>
 
-  <!-- ================= VISTA 3: COTIZADOR ================= -->
+  <!-- ================= VISTA 3: COTIZADOR CON AUTOCOMPLETADO ================= -->
   <div id="view-cotizador" class="view-section">
     <div class="card">
       <div class="card-title">Cotizador Rápido</div>
       
       <div class="step-box">
         <label>1. Buscar y Elegir Producto / Servicio</label>
-        <select id="cotizProductoSelect" class="form-control" onchange="actualizarInfoProductoCotizar()"></select>
+        <!-- Buscador tipo Google -->
+        <div class="autocomplete-box">
+          <input type="text" id="cotizSearchInput" class="form-control" placeholder="🔍 Teclea aquí para buscar (ej. Dryfit, Yazbek, Bordado)..." autocomplete="off" oninput="buscarSugerencias(this.value)" onfocus="buscarSugerencias(this.value)">
+          <input type="hidden" id="selectedProdId" value="">
+          <div class="results-dropdown" id="dropdownResultados"></div>
+        </div>
 
-        <div class="grid-2" style="margin-top:10px;">
+        <div id="productoSeleccionadoInfo" style="display:none; background:#e0f2fe; border:1px solid #bae6fd; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-size:0.9rem;">
+          <span style="color:#0369a1; font-weight:700;">Seleccionado:</span> <span id="lblProdSeleccionado" style="font-weight:600;"></span>
+        </div>
+
+        <div class="grid-2">
           <div>
             <label>2. Cantidad de piezas</label>
             <input type="number" id="cotizCantidad" class="form-control" value="1" min="1" oninput="calcularPrecioCotizacion()">
@@ -168,7 +193,7 @@
       <button type="button" class="btn-action btn-primary" onclick="agregarAlTicket()">+ Sumar a la Cotización</button>
     </div>
 
-    <!-- Ticket Acumulado -->
+    <!-- Ticket Flotante -->
     <div class="cart-float" id="ticketBox">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <span style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; color:#94a3b8; font-weight:700;">Ticket Acumulado</span>
@@ -191,14 +216,19 @@
 </div>
 
 <script>
-  // Conexión directa a tu Realtime Database de Firebase
   const FIREBASE_DB_URL = "https://cotizadorv2tinta-default-rtdb.firebaseio.com"; 
 
   let productos = [];
   let ticket = [];
+  let categoriasAbiertas = {}; // Recordar qué carpetas están desplegadas
 
   window.onload = function() {
     cargarProductosDesdeNube();
+    document.addEventListener("click", function(e) {
+      if (!e.target.closest(".autocomplete-box")) {
+        cerrarSugerencias();
+      }
+    });
   };
 
   async function cargarProductosDesdeNube() {
@@ -217,7 +247,6 @@
       status.innerHTML = "🟢 <span class='status-online'>En línea</span>: Todos los cambios se reflejan en tiempo real.";
       actualizarSelectCategorias();
       renderCatalogo();
-      actualizarSelectCotizador();
     } catch (e) {
       status.innerHTML = "⚠️ Error de conexión a la base de datos.";
     }
@@ -237,7 +266,6 @@
     } else if (tab === 'cotizador') {
       document.querySelector(".nav-btn:nth-child(3)").classList.add("active");
       document.getElementById("view-cotizador").classList.add("active");
-      actualizarSelectCotizador();
       calcularPrecioCotizacion();
     }
   }
@@ -400,9 +428,15 @@
     }
   }
 
+  /* ================= CATÁLOGO CON ACORDEÓN DESPLEGABLE ================= */
+  function toggleCategoria(catKey) {
+    categoriasAbiertas[catKey] = !categoriasAbiertas[catKey];
+    renderCatalogo();
+  }
+
   function renderCatalogo() {
     const cont = document.getElementById("listaCatalogoContainer");
-    const filtro = document.getElementById("buscarCatalogo") ? document.getElementById("buscarCatalogo").value.toLowerCase() : "";
+    const filtro = document.getElementById("buscarCatalogo") ? document.getElementById("buscarCatalogo").value.toLowerCase().trim() : "";
 
     if (!productos.length) {
       cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay productos en la base de datos. Agrega uno en la primera pestaña.</p>`;
@@ -424,7 +458,19 @@
 
     let html = "";
     for (const cat in grupos) {
-      html += `<div class="cat-group"><div class="cat-header"><span>📂 ${cat}</span> <span style="font-size:0.85rem; color:var(--muted); font-weight:normal;">${grupos[cat].length} productos</span></div>`;
+      // Si el usuario escribe en el filtro, mantenemos abiertas todas las coincidencias
+      const estaAbierta = filtro !== "" ? true : !!categoriasAbiertas[cat];
+      const flecha = estaAbierta ? "▲" : "▼";
+      const displayClass = estaAbierta ? "open" : "";
+
+      html += `
+        <div class="cat-group">
+          <div class="cat-header" onclick="toggleCategoria('${cat}')">
+            <span>📁 ${cat} <span style="font-size:0.85rem; color:var(--muted); font-weight:normal; margin-left:6px;">(${grupos[cat].length} productos)</span></span>
+            <span class="cat-toggle-icon">${flecha}</span>
+          </div>
+          <div class="cat-content ${displayClass}">
+      `;
       
       grupos[cat].forEach(p => {
         html += `
@@ -452,22 +498,61 @@
 
         html += `</div>`;
       });
-      html += `</div>`;
+
+      html += `</div></div>`;
     }
     cont.innerHTML = html;
   }
 
-  function actualizarSelectCotizador() {
-    const sel = document.getElementById("cotizProductoSelect");
+  /* ================= BUSCADOR TIPO GOOGLE (AUTOCOMPLETADO) ================= */
+  function buscarSugerencias(query) {
+    const dropdown = document.getElementById("dropdownResultados");
+    const q = query.toLowerCase().trim();
+
     if (!productos.length) {
-      sel.innerHTML = '<option value="">(No hay productos disponibles)</option>';
+      dropdown.style.display = "none";
       return;
     }
-    sel.innerHTML = productos.map(p => `<option value="${p.id}">[${p.categoria}] ${p.nombre}</option>`).join('');
-    actualizarInfoProductoCotizar();
+
+    const filtrados = productos.filter(p => 
+      p.nombre.toLowerCase().includes(q) || 
+      p.categoria.toLowerCase().includes(q)
+    );
+
+    if (!filtrados.length) {
+      dropdown.innerHTML = `<div style="padding:12px; font-size:0.85rem; color:var(--muted); text-align:center;">No hay resultados para "${query}"</div>`;
+      dropdown.style.display = "block";
+      return;
+    }
+
+    dropdown.innerHTML = filtrados.slice(0, 8).map(p => `
+      <div class="result-item" onclick="seleccionarProductoCotizador('${p.id}')">
+        <div>
+          <div class="result-item-name">${p.nombre}</div>
+          <div class="result-item-cat">${p.categoria}</div>
+        </div>
+        <div class="result-item-price">$${p.precioBase.toFixed(2)}</div>
+      </div>
+    `).join('');
+
+    dropdown.style.display = "block";
   }
 
-  function actualizarInfoProductoCotizar() {
+  function cerrarSugerencias() {
+    const dropdown = document.getElementById("dropdownResultados");
+    if (dropdown) dropdown.style.display = "none";
+  }
+
+  function seleccionarProductoCotizador(id) {
+    const prod = productos.find(p => p.id === id);
+    if (!prod) return;
+
+    document.getElementById("selectedProdId").value = prod.id;
+    document.getElementById("cotizSearchInput").value = prod.nombre;
+    document.getElementById("lblProdSeleccionado").innerText = `[${prod.categoria}] ${prod.nombre}`;
+    document.getElementById("productoSeleccionadoInfo").style.display = "block";
+
+    cerrarSugerencias();
     calcularPrecioCotizacion();
   }
 
@@ -492,7 +577,7 @@
   }
 
   function calcularPrecioCotizacion() {
-    const id = document.getElementById("cotizProductoSelect").value;
+    const id = document.getElementById("selectedProdId").value;
     const qty = parseInt(document.getElementById("cotizCantidad").value) || 1;
     const prod = productos.find(p => p.id === id);
 
@@ -508,11 +593,11 @@
   }
 
   function agregarAlTicket() {
-    const id = document.getElementById("cotizProductoSelect").value;
+    const id = document.getElementById("selectedProdId").value;
     const qty = parseInt(document.getElementById("cotizCantidad").value) || 1;
     const prod = productos.find(p => p.id === id);
 
-    if (!prod) return alert("Selecciona un producto.");
+    if (!prod) return alert("Por favor busca y selecciona un producto de la lista desplegable.");
 
     const calc = obtenerPrecioParaCantidad(prod, qty);
     const subtotal = calc.precio * qty;
@@ -525,6 +610,14 @@
       unitario: calc.precio,
       subtotal: subtotal
     });
+
+    // Limpiar buscador para permitir agregar otro producto rápido
+    document.getElementById("selectedProdId").value = "";
+    document.getElementById("cotizSearchInput").value = "";
+    document.getElementById("productoSeleccionadoInfo").style.display = "none";
+    document.getElementById("cotizCantidad").value = "1";
+    document.getElementById("cotizPrecioUnitario").innerText = "$0.00";
+    document.getElementById("cotizRangoAviso").innerText = "";
 
     renderTicket();
   }
