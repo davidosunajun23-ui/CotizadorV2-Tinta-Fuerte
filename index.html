@@ -17,7 +17,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 90px; }
-    .container { max-width: 820px; margin: 0 auto; }
+    .container { max-width: 900px; margin: 0 auto; }
     
     .status-bar { font-size: 0.85rem; text-align: center; margin-bottom: 12px; color: var(--muted); }
     .status-online { color: var(--success); font-weight: 700; }
@@ -47,16 +47,22 @@
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
 
-    /* Estilos Catálogo */
-    .cat-group { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
-    .cat-header { font-size: 1.05rem; font-weight: 700; color: #1e293b; padding: 14px 16px; background: #f8fafc; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
-    .cat-header:hover { background: #f1f5f9; }
-    .cat-content { display: none; padding: 12px; background: #fff; border-top: 1px solid var(--border); }
-    .cat-content.open { display: block; }
-    
-    .subcat-group { margin-bottom: 10px; border-left: 3px solid var(--primary); padding-left: 12px; }
-    .subcat-header { font-size: 0.95rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* CUADRÍCULA DE CATEGORÍAS (VENTANAS GRANDES) */
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 14px; }
+    .cat-window { background: #fff; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+    .cat-window:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.08); border-color: #cbd5e1; }
+    .cat-img-box { width: 100%; height: 140px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    .cat-img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .cat-img-placeholder { font-size: 2.8rem; color: #94a3b8; }
+    .cat-window-info { padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+    .cat-window-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+    .cat-window-count { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .btn-upload-thumb { position: absolute; top: 8px; right: 8px; background: rgba(15,23,42,0.65); color: #fff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; backdrop-filter: blur(4px); }
+    .btn-upload-thumb:hover { background: rgba(15,23,42,0.85); }
 
+    /* DETALLE DE PRODUCTOS DENTRO DE CATEGORÍA */
+    .subcat-group { margin-bottom: 12px; border-left: 3px solid var(--primary); padding-left: 12px; }
+    .subcat-header { font-size: 0.95rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .prod-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
     .prod-head { display: flex; justify-content: space-between; align-items: flex-start; }
     .prod-name { font-size: 1rem; font-weight: 700; color: #0f172a; }
@@ -83,7 +89,7 @@
 <div class="container">
   <div class="status-bar" id="syncStatus">🔄 Conectando con la base de datos central...</div>
 
-  <!-- Pestañas -->
+  <!-- Pestañas Principales -->
   <div class="nav-tabs">
     <button class="nav-btn active" onclick="verTab('agregar')">➕ Nuevo Producto</button>
     <button class="nav-btn" onclick="verTab('catalogo')">📋 Catálogo General</button>
@@ -112,7 +118,7 @@
           </div>
           <div>
             <label>O Escribir Nueva</label>
-            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Impresión DTF, Gorras, Playeras..." oninput="actualizarSelectSubcategorias()">
+            <input type="text" id="categoriaInput" class="form-control" placeholder="Ej. Blanks, Gorras, DTF..." oninput="actualizarSelectSubcategorias()">
           </div>
         </div>
       </div>
@@ -128,8 +134,8 @@
             </select>
           </div>
           <div>
-            <label>O Escribir Nueva</label>
-            <input type="text" id="subcategoriaInput" class="form-control" placeholder="Ej. Yupoong, Mayork, Formato Chico...">
+            <label>O Escribir Nueva Marca</label>
+            <input type="text" id="subcategoriaInput" class="form-control" placeholder="Ej. Yupoong, Explosion, Mayork...">
           </div>
         </div>
       </div>
@@ -137,12 +143,12 @@
       <!-- Paso 2 -->
       <div class="step-box">
         <div class="step-header">Paso 2: Nombre o Modelo del Producto</div>
-        <input type="text" id="nombreInput" class="form-control" placeholder="Ej. Chica, 6606 Trucker, Cuello Redondo...">
+        <input type="text" id="nombreInput" class="form-control" placeholder="Ej. 6606 Trucker, Cuello Redondo S-XL, Chica...">
       </div>
 
       <!-- Paso 3 -->
       <div class="step-box">
-        <div class="step-header">Paso 3: Precio Unitario Base (1 pieza / Menudeo)</div>
+        <div class="step-header">Paso 3: Precio Unitario Base (1 pieza)</div>
         <input type="number" id="precioBaseInput" class="form-control" placeholder="0.00" min="0" step="any">
       </div>
 
@@ -157,7 +163,7 @@
 
         <div id="mayoreoSection" style="display: none; margin-top: 10px;">
           <p style="font-size:0.85rem; color:var(--muted); margin-bottom:10px;">
-            <b>Tip:</b> Si un precio es solo para una cantidad exacta (ej. solo 2 piezas), pon <b>2 en "Desde"</b> y <b>2 en "Hasta"</b>. Si es a partir de cierta cantidad en adelante (ej. 12 o más), deja "Hasta" en blanco.
+            <b>Tip:</b> Si un precio es solo para una cantidad fija (ej. 2 piezas), pon <b>2 en "Desde"</b> y <b>2 en "Hasta"</b>.
           </p>
           <div id="tiersContainer"></div>
           <button type="button" class="btn-action btn-secondary btn-sm" onclick="agregarFilaRango()">+ Agregar Otro Rango</button>
@@ -168,12 +174,21 @@
     </div>
   </div>
 
-  <!-- ================= VISTA 2: CATÁLOGO ================= -->
+  <!-- ================= VISTA 2: CATÁLOGO EN VENTANAS GRANDES ================= -->
   <div id="view-catalogo" class="view-section">
     <div class="card">
-      <div class="card-title">Catálogo General Compartido</div>
-      <input type="text" id="buscarCatalogo" class="form-control" placeholder="🔍 Filtrar por categoría, marca o nombre..." oninput="renderCatalogo()">
-      <div id="listaCatalogoContainer"></div>
+      <div class="card-title">
+        <span id="catViewTitle">Catálogo General</span>
+        <button id="btnVolverCategorias" class="btn-action btn-secondary btn-sm" style="display:none;" onclick="volverASeleccionCategorias()">⬅ Volver a Categorías</button>
+      </div>
+
+      <input type="text" id="buscarCatalogo" class="form-control" placeholder="🔍 Filtrar por categoría, marca o nombre..." oninput="filtrarEnTiempoReal()">
+
+      <!-- Contenedor 1: Ventanas de Categorías -->
+      <div id="gridCategoriasContainer" class="cat-grid"></div>
+
+      <!-- Contenedor 2: Productos dentro de la categoría seleccionada -->
+      <div id="detalleCategoriaContainer" style="display:none; margin-top:14px;"></div>
     </div>
   </div>
 
@@ -185,7 +200,7 @@
       <div class="step-box">
         <label>1. Buscar Producto / Servicio</label>
         <div class="autocomplete-box">
-          <input type="text" id="cotizSearchInput" class="form-control" placeholder="🔍 Teclea aquí para buscar..." autocomplete="off" oninput="buscarSugerencias(this.value)" onfocus="buscarSugerencias(this.value)">
+          <input type="text" id="cotizSearchInput" class="form-control" placeholder="🔍 Teclea aquí (ej. Dryfit, Yazbek, Chica, 6606)..." autocomplete="off" oninput="buscarSugerencias(this.value)" onfocus="buscarSugerencias(this.value)">
           <input type="hidden" id="selectedProdId" value="">
           <div class="results-dropdown" id="dropdownResultados"></div>
         </div>
@@ -233,36 +248,50 @@
   </div>
 </div>
 
+<!-- Input oculto para subir imagen de categoría -->
+<input type="file" id="inputFotoCategoria" accept="image/*" style="display:none;" onchange="procesarFotoCategoria(event)">
+
 <script>
   const FIREBASE_DB_URL = "https://cotizadorv2tinta-default-rtdb.firebaseio.com"; 
 
   let productos = [];
+  let imagenesCategorias = {};
   let ticket = [];
-  let categoriasAbiertas = {};
+  let categoriaActiva = null;
+  let categoriaEditandoFoto = null;
 
   window.onload = function() {
-    cargarProductosDesdeNube();
+    cargarDatosDesdeNube();
     document.addEventListener("click", function(e) {
       if (!e.target.closest(".autocomplete-box")) cerrarSugerencias();
     });
   };
 
-  async function cargarProductosDesdeNube() {
+  async function cargarDatosDesdeNube() {
     const status = document.getElementById("syncStatus");
     status.innerHTML = "🔄 Sincronizando con la nube...";
     try {
-      const res = await fetch(`${FIREBASE_DB_URL}/productos.json`);
-      const data = await res.json();
+      // Cargar productos e imágenes en paralelo
+      const [resProd, resImg] = await Promise.all([
+        fetch(`${FIREBASE_DB_URL}/productos.json`),
+        fetch(`${FIREBASE_DB_URL}/categorias_info.json`)
+      ]);
+      
+      const dataProd = await resProd.json();
+      const dataImg = await resImg.json();
       
       productos = [];
-      if (data) {
-        for (let key in data) {
-          productos.push({ id: key, ...data[key] });
+      if (dataProd) {
+        for (let key in dataProd) {
+          productos.push({ id: key, ...dataProd[key] });
         }
       }
+      
+      imagenesCategorias = dataImg || {};
+
       status.innerHTML = "🟢 <span class='status-online'>En línea</span>: Todos los cambios se reflejan en tiempo real.";
       actualizarSelectCategorias();
-      renderCatalogo();
+      renderizarVistaCatalogo();
     } catch (e) {
       status.innerHTML = "⚠️ Error de conexión a la base de datos.";
     }
@@ -278,7 +307,7 @@
     } else if (tab === 'catalogo') {
       document.querySelector(".nav-btn:nth-child(2)").classList.add("active");
       document.getElementById("view-catalogo").classList.add("active");
-      renderCatalogo();
+      renderizarVistaCatalogo();
     } else if (tab === 'cotizador') {
       document.querySelector(".nav-btn:nth-child(3)").classList.add("active");
       document.getElementById("view-cotizador").classList.add("active");
@@ -286,6 +315,244 @@
     }
   }
 
+  /* ================= SUBIDA DE IMAGENES COMPRIMIDAS (BASE64) ================= */
+  function abrirSelectorFoto(event, categoria) {
+    event.stopPropagation();
+    categoriaEditandoFoto = categoria;
+    document.getElementById("inputFotoCategoria").click();
+  }
+
+  function procesarFotoCategoria(e) {
+    const file = e.target.files[0];
+    if (!file || !categoriaEditandoFoto) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = async function() {
+        // Comprimir en canvas a máximo 400x300 px
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 400;
+        const MAX_HEIGHT = 300;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convertir a JPEG 70% calidad
+        const base64Comprimido = canvas.toDataURL("image/jpeg", 0.7);
+
+        // Guardar en Firebase bajo el nombre normalizado de la categoría
+        const catKey = encodeURIComponent(categoriaEditandoFoto).replace(/\./g, '%2E');
+        try {
+          await fetch(`${FIREBASE_DB_URL}/categorias_info/${catKey}.json`, {
+            method: 'PUT',
+            body: JSON.stringify({ imagen: base64Comprimido })
+          });
+          imagenesCategorias[catKey] = { imagen: base64Comprimido };
+          renderizarVistaCatalogo();
+        } catch (err) {
+          alert("Error guardando imagen: " + err.message);
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+
+  function obtenerImagenCategoria(nombreCat) {
+    const key = encodeURIComponent(nombreCat).replace(/\./g, '%2E');
+    if (imagenesCategorias[key] && imagenesCategorias[key].imagen) {
+      return imagenesCategorias[key].imagen;
+    }
+    return null;
+  }
+
+  /* ================= CATÁLOGO: VENTANAS Y NAVEGACIÓN ================= */
+  function renderizarVistaCatalogo() {
+    const filtro = document.getElementById("buscarCatalogo") ? document.getElementById("buscarCatalogo").value.toLowerCase().trim() : "";
+    
+    // Si hay búsqueda activa, saltamos la cuadrícula y mostramos resultados directos
+    if (filtro !== "") {
+      mostrarResultadosFiltrados(filtro);
+      return;
+    }
+
+    if (categoriaActiva) {
+      mostrarDetalleCategoria(categoriaActiva);
+    } else {
+      mostrarGridCategorias();
+    }
+  }
+
+  function filtrarEnTiempoReal() {
+    categoriaActiva = null;
+    renderizarVistaCatalogo();
+  }
+
+  function volverASeleccionCategorias() {
+    categoriaActiva = null;
+    document.getElementById("buscarCatalogo").value = "";
+    renderizarVistaCatalogo();
+  }
+
+  function mostrarGridCategorias() {
+    document.getElementById("btnVolverCategorias").style.display = "none";
+    document.getElementById("catViewTitle").innerText = "Catálogo General";
+    document.getElementById("gridCategoriasContainer").style.display = "grid";
+    document.getElementById("detalleCategoriaContainer").style.display = "none";
+
+    const cont = document.getElementById("gridCategoriasContainer");
+    
+    // Contar productos por categoría
+    const grupos = {};
+    productos.forEach(p => {
+      grupos[p.categoria] = (grupos[p.categoria] || 0) + 1;
+    });
+
+    const listaCats = Object.keys(grupos);
+    if (!listaCats.length) {
+      cont.innerHTML = `<p style="color:var(--muted); text-align:center; grid-column: 1/-1; padding:30px;">No hay productos creados aún. Agrega el primero en "+ Nuevo Producto".</p>`;
+      return;
+    }
+
+    cont.innerHTML = listaCats.map(cat => {
+      const img = obtenerImagenCategoria(cat);
+      const imgHtml = img 
+        ? `<img src="${img}" alt="${cat}">` 
+        : `<div class="cat-img-placeholder">📁</div>`;
+
+      return `
+        <div class="cat-window" onclick="abrirCategoria('${cat}')">
+          <div class="cat-img-box">
+            ${imgHtml}
+            <button class="btn-upload-thumb" onclick="abrirSelectorFoto(event, '${cat}')">📷 Foto</button>
+          </div>
+          <div class="cat-window-info">
+            <div class="cat-window-title">${cat}</div>
+            <div class="cat-window-count">${grupos[cat]} productos</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function abrirCategoria(cat) {
+    categoriaActiva = cat;
+    renderizarVistaCatalogo();
+  }
+
+  function mostrarDetalleCategoria(cat) {
+    document.getElementById("btnVolverCategorias").style.display = "inline-flex";
+    document.getElementById("catViewTitle").innerText = `Categoría: ${cat}`;
+    document.getElementById("gridCategoriasContainer").style.display = "none";
+    
+    const contDetalle = document.getElementById("detalleCategoriaContainer");
+    contDetalle.style.display = "block";
+
+    const prodsCat = productos.filter(p => p.categoria.toLowerCase() === cat.toLowerCase());
+    
+    // Agrupar por subcategoría/marca
+    const subgrupos = {};
+    prodsCat.forEach(p => {
+      const sub = p.subcategoria || "General";
+      if (!subgrupos[sub]) subgrupos[sub] = [];
+      subgrupos[sub].push(p);
+    });
+
+    let html = "";
+    for (const sub in subgrupos) {
+      html += `<div class="subcat-group">`;
+      if (sub !== "General") {
+        html += `<div class="subcat-header">🏷️ Marca: ${sub}</div>`;
+      }
+
+      subgrupos[sub].forEach(p => {
+        html += renderTarjetaProducto(p);
+      });
+      html += `</div>`;
+    }
+
+    contDetalle.innerHTML = html;
+  }
+
+  function mostrarResultadosFiltrados(filtro) {
+    document.getElementById("btnVolverCategorias").style.display = "inline-flex";
+    document.getElementById("catViewTitle").innerText = `Resultados de: "${filtro}"`;
+    document.getElementById("gridCategoriasContainer").style.display = "none";
+    
+    const contDetalle = document.getElementById("detalleCategoriaContainer");
+    contDetalle.style.display = "block";
+
+    const filtrados = productos.filter(p => {
+      const sub = p.subcategoria || "";
+      return p.nombre.toLowerCase().includes(filtro) || 
+             p.categoria.toLowerCase().includes(filtro) || 
+             sub.toLowerCase().includes(filtro);
+    });
+
+    if (!filtrados.length) {
+      contDetalle.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No se encontraron productos coincidentes.</p>`;
+      return;
+    }
+
+    contDetalle.innerHTML = filtrados.map(p => renderTarjetaProducto(p)).join('');
+  }
+
+  function renderTarjetaProducto(p) {
+    let rangosHtml = "";
+    if (p.tieneMayoreo && p.rangos && p.rangos.length > 0) {
+      rangosHtml = `<div class="tier-badge-list">`;
+      p.rangos.forEach(r => {
+        let labelRango = "";
+        if (r.hasta === null) {
+          labelRango = `${r.desde}+ pz`;
+        } else if (r.desde === r.hasta) {
+          labelRango = `${r.desde} pz`;
+        } else {
+          labelRango = `${r.desde} a ${r.hasta} pz`;
+        }
+        rangosHtml += `<span class="tier-pill">📦 ${labelRango}: <b>$${r.precio.toFixed(2)}</b> c/u</span>`;
+      });
+      rangosHtml += `</div>`;
+    }
+
+    const subTxt = (p.subcategoria && p.subcategoria !== "General") ? ` • <i>${p.subcategoria}</i>` : '';
+
+    return `
+      <div class="prod-card">
+        <div class="prod-head">
+          <div>
+            <div class="prod-name">${p.nombre}</div>
+            <div style="font-size:0.85rem; color:var(--muted);">[${p.categoria}${subTxt}] 1 pz: <b style="color:var(--text); font-size:0.95rem;">$${p.precioBase.toFixed(2)}</b></div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-action btn-secondary btn-sm" onclick="editarProducto('${p.id}')">✏️ Editar</button>
+            <button class="btn-action btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">🗑️</button>
+          </div>
+        </div>
+        ${rangosHtml}
+      </div>
+    `;
+  }
+
+  /* ================= CATEGORÍAS & SUB ================= */
   function actualizarSelectCategorias() {
     const sel = document.getElementById("categoriaSelect");
     const cats = [...new Set(productos.map(p => p.categoria))].filter(Boolean);
@@ -319,6 +586,7 @@
     if (selVal) document.getElementById("subcategoriaInput").value = selVal;
   }
 
+  /* ================= MAYOREO ================= */
   function toggleMayoreoSection() {
     const check = document.getElementById("tieneMayoreoCheck").checked;
     document.getElementById("mayoreoSection").style.display = check ? "block" : "none";
@@ -352,6 +620,7 @@
     container.appendChild(div);
   }
 
+  /* ================= GUARDAR Y EDITAR ================= */
   async function guardarProducto() {
     const editId = document.getElementById("editId").value;
     const categoria = document.getElementById("categoriaInput").value.trim();
@@ -375,11 +644,7 @@
         if (!isNaN(d) && !isNaN(p)) rangos.push({ desde: d, hasta: h, precio: p });
       });
 
-      // Ordenar rangos de menor a mayor
       rangos.sort((a, b) => a.desde - b.desde);
-
-      // Si alguien puso Desde: 2 y dejó Hasta vacío pero el siguiente rango es Desde: 3, 
-      // corregir automáticamente para que Hasta sea 2 (rango exacto de 1 pieza).
       for (let i = 0; i < rangos.length; i++) {
         if (rangos[i].hasta === null && i < rangos.length - 1) {
           rangos[i].hasta = rangos[i + 1].desde - 1;
@@ -387,37 +652,23 @@
       }
     }
 
-    const payload = {
-      categoria,
-      subcategoria,
-      nombre,
-      precioBase,
-      tieneMayoreo: (rangos.length > 0),
-      rangos
-    };
-
+    const payload = { categoria, subcategoria, nombre, precioBase, tieneMayoreo: (rangos.length > 0), rangos };
     document.getElementById("btnGuardar").innerText = "Guardando en la nube...";
     document.getElementById("btnGuardar").disabled = true;
 
     try {
       if (editId) {
-        await fetch(`${FIREBASE_DB_URL}/productos/${editId}.json`, {
-          method: 'PUT',
-          body: JSON.stringify(payload)
-        });
-        alert("¡Producto actualizado exitosamente!");
+        await fetch(`${FIREBASE_DB_URL}/productos/${editId}.json`, { method: 'PUT', body: JSON.stringify(payload) });
+        alert("¡Producto actualizado!");
       } else {
-        await fetch(`${FIREBASE_DB_URL}/productos.json`, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        alert("¡Producto guardado exitosamente!");
+        await fetch(`${FIREBASE_DB_URL}/productos.json`, { method: 'POST', body: JSON.stringify(payload) });
+        alert("¡Producto guardado!");
       }
       limpiarFormulario();
-      await cargarProductosDesdeNube();
+      await cargarDatosDesdeNube();
       verTab('catalogo');
     } catch (err) {
-      alert("Error al conectar: " + err.message);
+      alert("Error: " + err.message);
     } finally {
       document.getElementById("btnGuardar").innerText = "Guardar en la Nube";
       document.getElementById("btnGuardar").disabled = false;
@@ -470,117 +721,17 @@
   }
 
   async function eliminarProducto(id) {
-    if (confirm("¿Estás seguro de que deseas eliminar este producto? Se borrará para todos.")) {
+    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       try {
         await fetch(`${FIREBASE_DB_URL}/productos/${id}.json`, { method: 'DELETE' });
-        await cargarProductosDesdeNube();
+        await cargarDatosDesdeNube();
       } catch (e) {
         alert("Error al eliminar: " + e.message);
       }
     }
   }
 
-  /* ================= CATÁLOGO ================= */
-  function toggleCategoria(catKey) {
-    categoriasAbiertas[catKey] = !categoriasAbiertas[catKey];
-    renderCatalogo();
-  }
-
-  function renderCatalogo() {
-    const cont = document.getElementById("listaCatalogoContainer");
-    const filtro = document.getElementById("buscarCatalogo") ? document.getElementById("buscarCatalogo").value.toLowerCase().trim() : "";
-
-    if (!productos.length) {
-      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay productos todavía.</p>`;
-      return;
-    }
-
-    const arbol = {};
-    productos.forEach(p => {
-      const sub = p.subcategoria || "General";
-      const coincide = p.nombre.toLowerCase().includes(filtro) || 
-                       p.categoria.toLowerCase().includes(filtro) || 
-                       sub.toLowerCase().includes(filtro);
-
-      if (coincide) {
-        if (!arbol[p.categoria]) arbol[p.categoria] = {};
-        if (!arbol[p.categoria][sub]) arbol[p.categoria][sub] = [];
-        arbol[p.categoria][sub].push(p);
-      }
-    });
-
-    if (Object.keys(arbol).length === 0) {
-      cont.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No se encontraron resultados.</p>`;
-      return;
-    }
-
-    let html = "";
-    for (const cat in arbol) {
-      let totalProdCat = 0;
-      for (const s in arbol[cat]) totalProdCat += arbol[cat][s].length;
-
-      const estaAbierta = filtro !== "" ? true : !!categoriasAbiertas[cat];
-      const flecha = estaAbierta ? "▲" : "▼";
-      const displayClass = estaAbierta ? "open" : "";
-
-      html += `
-        <div class="cat-group">
-          <div class="cat-header" onclick="toggleCategoria('${cat}')">
-            <span>📁 ${cat} <span style="font-size:0.85rem; color:var(--muted); font-weight:normal; margin-left:6px;">(${totalProdCat} productos)</span></span>
-            <span style="font-size:0.85rem; color:var(--muted);">${flecha}</span>
-          </div>
-          <div class="cat-content ${displayClass}">
-      `;
-
-      for (const sub in arbol[cat]) {
-        html += `<div class="subcat-group">`;
-        if (sub !== "General") {
-          html += `<div class="subcat-header">🏷️ ${sub}</div>`;
-        }
-
-        arbol[cat][sub].forEach(p => {
-          html += `
-            <div class="prod-card">
-              <div class="prod-head">
-                <div>
-                  <div class="prod-name">${p.nombre}</div>
-                  <div style="font-size:0.85rem; color:var(--muted);">1 pz (Base): <b style="color:var(--text); font-size:0.95rem;">$${p.precioBase.toFixed(2)}</b></div>
-                </div>
-                <div style="display:flex; gap:6px;">
-                  <button class="btn-action btn-secondary btn-sm" onclick="editarProducto('${p.id}')">✏️ Editar</button>
-                  <button class="btn-action btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">🗑️</button>
-                </div>
-              </div>
-          `;
-
-          if (p.tieneMayoreo && p.rangos && p.rangos.length > 0) {
-            html += `<div class="tier-badge-list">`;
-            p.rangos.forEach(r => {
-              let labelRango = "";
-              if (r.hasta === null) {
-                labelRango = `${r.desde}+ pz`;
-              } else if (r.desde === r.hasta) {
-                labelRango = `${r.desde} pz`; // Si es solo 1 pieza exacta
-              } else {
-                labelRango = `${r.desde} a ${r.hasta} pz`;
-              }
-              html += `<span class="tier-pill">📦 ${labelRango}: <b>$${r.precio.toFixed(2)}</b> c/u</span>`;
-            });
-            html += `</div>`;
-          }
-
-          html += `</div>`;
-        });
-
-        html += `</div>`;
-      }
-
-      html += `</div></div>`;
-    }
-    cont.innerHTML = html;
-  }
-
-  /* ================= AUTOCOMPLETADO Y SELECCIÓN ================= */
+  /* ================= AUTOCOMPLETADO Y COTIZACIÓN ================= */
   function buscarSugerencias(query) {
     const dropdown = document.getElementById("dropdownResultados");
     const q = query.toLowerCase().trim();
@@ -640,13 +791,11 @@
     calcularPrecioCotizacion();
   }
 
-  /* ================= LÓGICA DE CÁLCULO EXACTO POR CANTIDAD ================= */
   function obtenerPrecioParaCantidad(prod, qty) {
     if (!prod.tieneMayoreo || !prod.rangos || !prod.rangos.length) {
       return { precio: prod.precioBase, rangoDesc: "Precio unitario estándar (1 pieza)" };
     }
 
-    // 1. Buscar coincidencia exacta en rangos cerrados (ej: 2 a 2 pz, o 3 a 5 pz)
     for (let r of prod.rangos) {
       if (r.hasta !== null) {
         if (qty >= r.desde && qty <= r.hasta) {
@@ -658,7 +807,6 @@
       }
     }
 
-    // 2. Si no cayó en un rango cerrado, buscar en rangos abiertos (ej: 12+ pz)
     for (let r of prod.rangos) {
       if (r.hasta === null && qty >= r.desde) {
         return { precio: r.precio, rangoDesc: `Mayoreo aplicado: ${r.desde} piezas o más` };
