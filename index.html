@@ -22,7 +22,7 @@
     .status-bar { font-size: 0.85rem; text-align: center; margin-bottom: 12px; color: var(--muted); }
     .status-online { color: var(--success); font-weight: 700; }
 
-    .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 50; background: var(--bg); padding: 6px 0; }
+    .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 500; background: var(--bg); padding: 6px 0; }
     .nav-btn { padding: 12px 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); font-weight: 600; font-size: 0.95rem; cursor: pointer; color: var(--muted); transition: all 0.2s; text-align: center; }
     .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
     
@@ -68,16 +68,53 @@
     .tier-badge-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
     .tier-pill { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
 
+    /* CONTENEDOR DE TABLA SIN RECORTE */
+    .table-container-cotizador {
+      position: relative;
+      overflow: visible;
+      padding-bottom: 70px;
+    }
+
     /* AUTOCOMPLETADO DENTRO DE TABLA */
-    .table-autocomplete { position: relative; width: 100%; }
-    .table-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); max-height: 200px; overflow-y: auto; z-index: 100; display: none; }
-    .table-dropdown-item { padding: 8px 10px; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
-    .table-dropdown-item:hover { background: #eff6ff; }
+    .table-autocomplete {
+      position: relative;
+      width: 100%;
+    }
+    .table-dropdown {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 9999;
+      display: none;
+    }
+    .table-dropdown-item {
+      padding: 9px 12px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+    }
+    .table-dropdown-item:last-child {
+      border-bottom: none;
+    }
+    .table-dropdown-item:hover {
+      background: #eff6ff;
+    }
 
     /* TABLA HORIZONTAL DEL COTIZADOR */
     .table-cotizador { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 10px; }
     .table-cotizador th { text-align: left; font-size: 0.82rem; text-transform: uppercase; color: var(--muted); padding: 6px 8px; letter-spacing: 0.5px; }
-    .row-variante { background: #f8fafc; border: 1px solid var(--border); }
+    .row-variante { background: #f8fafc; border: 1px solid var(--border); position: relative; }
     .row-variante td { padding: 10px 8px; vertical-align: top; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .row-variante td:first-child { border-left: 1px solid var(--border); border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
     .row-variante td:last-child { border-right: 1px solid var(--border); border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
@@ -86,7 +123,7 @@
     .extra-item-line { display: grid; grid-template-columns: 1.2fr 0.8fr auto; gap: 4px; align-items: center; margin-bottom: 4px; }
 
     /* BARRA RESUMEN */
-    .cart-float { background: #0f172a; color: white; border-radius: 14px; padding: 18px 24px; margin-top: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; justify-content: space-between; align-items: center; }
+    .cart-float { background: #0f172a; color: white; border-radius: 14px; padding: 18px 24px; margin-top: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; justify-content: space-between; align-items: center; }
     .cart-total-box { display: flex; gap: 24px; align-items: center; }
     .pill-tipo { display: inline-block; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
     .pill-prenda { background: #e0f2fe; color: #0369a1; }
@@ -214,7 +251,7 @@
 
   <!-- ================= VISTA 3: COTIZADOR POR BLOQUES / VARIANTES ================= -->
   <div id="view-cotizador" class="view-section">
-    <div class="card">
+    <div class="card" style="overflow: visible;">
       <div class="card-title">
         <span>Cotizador por Bloques de Variantes</span>
         <button class="btn-action btn-danger btn-sm" onclick="reiniciarCotizador()">Limpiar Todo</button>
@@ -224,14 +261,14 @@
         Define la cantidad de cada variante. El precio de mayoreo de la columna <b>Servicio</b> se ajustará automáticamente considerando la <b>suma total de prendas del pedido completo</b>.
       </p>
 
-      <!-- Tabla de Variantes -->
-      <div style="overflow-x:auto;">
+      <!-- Contenedor sin scroll que permite desplegar los menús sin corte -->
+      <div class="table-container-cotizador">
         <table class="table-cotizador">
           <thead>
             <tr>
               <th style="width: 80px;">1. Cantidad</th>
-              <th style="width: 250px;">2. Prenda (Fijo)</th>
-              <th style="width: 250px;">3. Servicio (Mayoreo Global)</th>
+              <th style="width: 260px;">2. Prenda (Fijo)</th>
+              <th style="width: 260px;">3. Servicio (Mayoreo Global)</th>
               <th style="min-width: 240px;">4. Extras / Descuentos</th>
               <th style="width: 100px;">Precio Unit.</th>
               <th style="width: 110px;">Total Variante</th>
@@ -242,7 +279,7 @@
         </table>
       </div>
 
-      <button type="button" class="btn-action btn-secondary" style="margin-top:12px;" onclick="agregarFilaVariante()">
+      <button type="button" class="btn-action btn-secondary" style="margin-top:6px;" onclick="agregarFilaVariante()">
         + Agregar otra variante / producto
       </button>
 
@@ -279,7 +316,6 @@
   let categoriaActiva = null;
   let categoriaEditandoFoto = null;
 
-  // Lista de renglones del cotizador
   let variantesCotizador = [];
 
   window.onload = function() {
@@ -316,7 +352,6 @@
       actualizarSelectCategorias();
       renderizarVistaCatalogo();
 
-      // Iniciar cotizador con 1 renglón si está vacío
       if (variantesCotizador.length === 0) {
         agregarFilaVariante();
       }
@@ -735,7 +770,7 @@
     }
   }
 
-  /* ================= LÓGICA DEL NUEVO COTIZADOR POR VARIANTES ================= */
+  /* ================= COTIZADOR POR VARIANTES ================= */
   function agregarFilaVariante() {
     const vId = "var_" + Date.now() + "_" + Math.floor(Math.random()*1000);
     variantesCotizador.push({
@@ -782,7 +817,6 @@
       return prodServicio.precioBase;
     }
 
-    // 1. Rangos cerrados
     for (let r of prodServicio.rangos) {
       if (r.hasta !== null) {
         if (totalGlobalPiezas >= r.desde && totalGlobalPiezas <= r.hasta) {
@@ -790,7 +824,6 @@
         }
       }
     }
-    // 2. Rangos abiertos
     for (let r of prodServicio.rangos) {
       if (r.hasta === null && totalGlobalPiezas >= r.desde) {
         return r.precio;
@@ -812,7 +845,6 @@
       const costoPrenda = prenda ? prenda.precioBase : 0;
       const costoServicio = servicio ? obtenerPrecioServicioGlobal(servicio, totalGlobal) : 0;
 
-      // Suma de extras y descuentos
       let sumaExtras = 0;
       v.extras.forEach(e => {
         sumaExtras += (parseFloat(e.monto) || 0);
@@ -822,7 +854,6 @@
       const totalVariante = precioUnitario * (parseInt(v.cantidad) || 0);
       granTotal += totalVariante;
 
-      // Actualizar etiquetas en el DOM si existen
       const lblServicio = document.getElementById(`lblServicio_${idx}`);
       if (lblServicio) {
         lblServicio.innerText = servicio ? `$${costoServicio.toFixed(2)} c/u (escala ${totalGlobal} pz)` : "$0.00";
@@ -842,9 +873,13 @@
     const tbody = document.getElementById("tbodyVariantes");
     tbody.innerHTML = "";
 
+    const totalVariantes = variantesCotizador.length;
+
     variantesCotizador.forEach((v, idx) => {
       const tr = document.createElement("tr");
       tr.className = "row-variante";
+      // Asignar z-index decreciente a cada fila para que el menú de arriba siempre quede sobre el de abajo
+      tr.style.zIndex = (totalVariantes - idx + 10);
 
       const prenda = productos.find(p => p.id === v.prendaId);
       const servicio = productos.find(p => p.id === v.servicioId);
@@ -854,7 +889,6 @@
 
       const nombreServicio = servicio ? `[${servicio.categoria}] ${servicio.nombre}` : "";
 
-      // Generar líneas de extras
       let extrasHtml = "";
       v.extras.forEach((ext, eIdx) => {
         extrasHtml += `
@@ -873,7 +907,7 @@
         </td>
 
         <!-- 2. Prenda -->
-        <td>
+        <td style="position:relative; z-index:${(totalVariantes - idx + 20)};">
           <div class="table-autocomplete">
             <input type="text" class="form-control" placeholder="🔍 Buscar Prenda..." value="${nombrePrenda}" onfocus="mostrarDropdownTabla(this, ${idx}, 'prenda')" oninput="filtrarDropdownTabla(this, ${idx}, 'prenda')">
             <div class="table-dropdown" id="dropdown_prenda_${idx}"></div>
@@ -882,9 +916,9 @@
         </td>
 
         <!-- 3. Servicio -->
-        <td>
+        <td style="position:relative; z-index:${(totalVariantes - idx + 15)};">
           <div class="table-autocomplete">
-            <input type="text" class="form-control" placeholder="🔍 Buscar Servicio (DTF/Bordado)..." value="${nombreServicio}" onfocus="mostrarDropdownTabla(this, ${idx}, 'servicio')" oninput="filtrarDropdownTabla(this, ${idx}, 'servicio')">
+            <input type="text" class="form-control" placeholder="🔍 Buscar Servicio..." value="${nombreServicio}" onfocus="mostrarDropdownTabla(this, ${idx}, 'servicio')" oninput="filtrarDropdownTabla(this, ${idx}, 'servicio')">
             <div class="table-dropdown" id="dropdown_servicio_${idx}"></div>
           </div>
           <div class="tag-precio" id="lblServicio_${idx}">$0.00</div>
@@ -936,6 +970,7 @@
 
   /* ================= AUTOCOMPLETADO DENTRO DE LA TABLA ================= */
   function mostrarDropdownTabla(inputElem, rowIdx, tipo) {
+    document.querySelectorAll(".table-dropdown").forEach(d => d.style.display = "none");
     filtrarDropdownTabla(inputElem, rowIdx, tipo);
   }
 
@@ -943,7 +978,6 @@
     const dropdown = document.getElementById(`dropdown_${tipo}_${rowIdx}`);
     const q = inputElem.value.toLowerCase().trim();
 
-    // Filtrar estrictamente por la propiedad `tipo` configurada en el producto
     let lista = productos.filter(p => p.tipo === tipo);
 
     if (q !== "") {
@@ -955,7 +989,7 @@
     }
 
     if (!lista.length) {
-      dropdown.innerHTML = `<div style="padding:8px; font-size:0.8rem; color:var(--muted); text-align:center;">No se encontraron ${tipo}s</div>`;
+      dropdown.innerHTML = `<div style="padding:10px; font-size:0.85rem; color:var(--muted); text-align:center;">No se encontraron ${tipo}s</div>`;
       dropdown.style.display = "block";
       return;
     }
@@ -965,7 +999,7 @@
         <div>
           <b>${p.nombre}</b> <span style="font-size:0.75rem; color:var(--muted);">(${p.categoria})</span>
         </div>
-        <div style="font-weight:700; color:var(--primary);">$${p.precioBase.toFixed(2)}</div>
+        <div style="font-weight:700; color:var(--primary); margin-left:8px;">$${p.precioBase.toFixed(2)}</div>
       </div>
     `).join('');
 
